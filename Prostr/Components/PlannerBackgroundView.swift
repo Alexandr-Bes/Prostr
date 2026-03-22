@@ -32,3 +32,7 @@ struct PlannerBackgroundView: View {
         }
     }
 }
+
+#Preview {
+    PlannerBackgroundView()
+}
