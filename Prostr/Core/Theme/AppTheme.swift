@@ -34,7 +34,7 @@ struct AppTheme {
 
     static let `default` = AppTheme(
         accentTint: Color(red: 0.86, green: 0.45, blue: 0.31),
-        canvasTop: Color(red: 0.98, green: 0.96, blue: 0.93),
+        canvasTop: Color(red: 0.98, green: 0.96, blue: 0.93), //FAFAFC
         canvasBottom: Color(red: 0.93, green: 0.89, blue: 0.83),
         ambientGlowTop: Color(red: 0.99, green: 0.86, blue: 0.76, opacity: 0.75),
         ambientGlowBottom: Color(red: 0.37, green: 0.31, blue: 0.26, opacity: 0.10),
