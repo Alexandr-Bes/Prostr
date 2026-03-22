@@ -9,26 +9,22 @@ import SwiftUI
 
 @MainActor
 enum PreviewAppCore {
-    static let shared: AppCore = {
-        let localStorage = InMemoryStorageAdapter()
-        let swiftDataService = SwiftDataService(containerProvider: ModelContainerProvider(isStoredInMemoryOnly: true))
-        let themeService = ThemeService(localStorage: localStorage)
-        let deepLinkService = AppDeepLinkService()
-        let deepLinkStore = SwiftDataDeepLinkHistoryStore(swiftData: swiftDataService)
+    // Screen previews should start from the same mocked dashboard state as the app shell.
+    static func make(themeMode: ThemeMode = .light) -> AppCore {
+        AppCoreFactory.makePreview(themeMode: themeMode)
+    }
+}
 
-        let services = AppServices(
-            swiftDataService: swiftDataService,
-            themeService: themeService,
-            deepLinkService: deepLinkService
-        )
+@MainActor
+extension View {
+    func previewAppCore() -> some View {
+        previewAppCore(PreviewAppCore.make())
+    }
 
-        let repositories = AppRepositories(
-            homeRepository: HomeRepository(remoteService: MockHomeRemoteService()),
-            deepLinkHistoryRepository: DeepLinkHistoryRepository(store: deepLinkStore)
-        )
-
-        let appCore = AppCore(services: services, repositories: repositories)
-        appCore.updateThemeMode(.dark)
-        return appCore
-    }()
+    func previewAppCore(_ appCore: AppCore) -> some View {
+        environment(appCore)
+            .appTheme(appCore.appTheme)
+            .preferredColorScheme(appCore.preferredColorScheme)
+            .tint(appCore.appTheme.accentTint)
+    }
 }

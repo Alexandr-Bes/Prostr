@@ -9,13 +9,37 @@ import Foundation
 
 @MainActor
 enum AppCoreFactory {
-    static func make() -> AppCore {
-        let localStorage = UserDefaultsStorageAdapter()
-        let swiftDataService = SwiftDataService()
+    // Use `.mocked` while the planner backend is not wired yet.
+    static func make(dataMode: AppDataMode = .mocked) -> AppCore {
+        make(
+            dataMode: dataMode,
+            isStoredInMemoryOnly: false,
+            preferredThemeMode: nil
+        )
+    }
+
+    // Previews reuse the same mocked planner data, but keep persistence in memory.
+    static func makePreview(themeMode: ThemeMode = .light) -> AppCore {
+        make(
+            dataMode: .mocked,
+            isStoredInMemoryOnly: true,
+            preferredThemeMode: themeMode
+        )
+    }
+
+    private static func make(
+        dataMode: AppDataMode,
+        isStoredInMemoryOnly: Bool,
+        preferredThemeMode: ThemeMode?
+    ) -> AppCore {
+        let localStorage: any LocalStorageAdapter = isStoredInMemoryOnly ? InMemoryStorageAdapter() : UserDefaultsStorageAdapter()
+        let swiftDataService = SwiftDataService(
+            containerProvider: ModelContainerProvider(isStoredInMemoryOnly: isStoredInMemoryOnly)
+        )
         let themeService = ThemeService(localStorage: localStorage)
         let deepLinkService = AppDeepLinkService()
         let deepLinkStore = SwiftDataDeepLinkHistoryStore(swiftData: swiftDataService)
-        let homeRemoteService = MockHomeRemoteService()
+        let plannerDashboardService = makePlannerDashboardService(for: dataMode)
 
         let services = AppServices(
             swiftDataService: swiftDataService,
@@ -24,10 +48,27 @@ enum AppCoreFactory {
         )
 
         let repositories = AppRepositories(
-            homeRepository: HomeRepository(remoteService: homeRemoteService),
+            plannerDashboardRepository: PlannerDashboardRepository(service: plannerDashboardService),
             deepLinkHistoryRepository: DeepLinkHistoryRepository(store: deepLinkStore)
         )
 
-        return AppCore(services: services, repositories: repositories)
+        let appCore = AppCore(services: services, repositories: repositories)
+
+        if let preferredThemeMode {
+            appCore.updateThemeMode(preferredThemeMode)
+        }
+
+        return appCore
+    }
+
+    private static func makePlannerDashboardService(for dataMode: AppDataMode) -> any PlannerDashboardServiceProtocol {
+        switch dataMode {
+        case .mocked:
+            return MockPlannerDashboardService()
+        case let .live(baseURL):
+            return LivePlannerDashboardService(
+                networkClient: URLSessionNetworkClient(baseURL: baseURL)
+            )
+        }
     }
 }

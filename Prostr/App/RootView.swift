@@ -28,7 +28,8 @@ struct RootView: View {
         .task {
             guard appCore == nil else { return }
 
-            let core = AppCoreFactory.make()
+            // Swap `.mocked` for `.live(baseURL:)` once the real planner API is ready.
+            let core = AppCoreFactory.make(dataMode: .mocked)
             await core.bootstrap()
             appCore = core
         }

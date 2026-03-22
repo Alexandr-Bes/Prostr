@@ -8,26 +8,31 @@
 import Foundation
 
 enum AppTab: String, CaseIterable, Hashable, Identifiable {
-    case home
-    case settings
+    case calendar
+    case todo
+    case ideas
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .home:
-            return "Home"
-        case .settings:
-            return "Settings"
+        case .calendar:
+            return "Calendar"
+        case .todo:
+            return "To-do"
+        case .ideas:
+            return "Ideas"
         }
     }
 
     var systemImage: String {
         switch self {
-        case .home:
-            return "square.grid.2x2.fill"
-        case .settings:
-            return "slider.horizontal.3"
+        case .calendar:
+            return "calendar"
+        case .todo:
+            return "checkmark.circle"
+        case .ideas:
+            return "sparkles"
         }
     }
 }

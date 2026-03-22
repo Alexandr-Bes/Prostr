@@ -11,59 +11,65 @@ struct TabsView: View {
     @Environment(AppCore.self) private var appCore
 
     @State private var homeViewModel: HomeViewModel
-    @State private var settingsViewModel: SettingsViewModel
+    @State private var todoViewModel: TodoViewModel
+    @State private var ideasViewModel: IdeasViewModel
 
     init(appCore: AppCore) {
         _homeViewModel = State(
-            wrappedValue: HomeViewModel(
-                homeRepository: appCore.repositories.homeRepository,
-                deepLinkHistoryRepository: appCore.repositories.deepLinkHistoryRepository
-            )
+            wrappedValue: HomeViewModel(plannerDashboardRepository: appCore.repositories.plannerDashboardRepository)
         )
 
-        _settingsViewModel = State(
-            wrappedValue: SettingsViewModel(
-                initialThemeMode: appCore.selectedThemeMode,
-                deepLinkHistoryRepository: appCore.repositories.deepLinkHistoryRepository,
-                onThemeModeChange: { mode in
-                    appCore.updateThemeMode(mode)
-                }
-            )
+        _todoViewModel = State(
+            wrappedValue: TodoViewModel(plannerDashboardRepository: appCore.repositories.plannerDashboardRepository)
+        )
+
+        _ideasViewModel = State(
+            wrappedValue: IdeasViewModel(plannerDashboardRepository: appCore.repositories.plannerDashboardRepository)
         )
     }
 
     var body: some View {
-        TabView(selection: selectionBinding) {
-            Tab(AppTab.home.title, systemImage: AppTab.home.systemImage, value: AppTab.home) {
-                NavigationStack(path: homePathBinding) {
-                    HomeView(viewModel: homeViewModel)
-                        .navigationDestination(for: String.self) { featureID in
-                            HomeFeatureDetailView(featureID: featureID, viewModel: homeViewModel)
-                        }
-                }
+        currentTabView
+            .safeAreaInset(edge: .bottom) {
+                PlannerTabBar(
+                    selection: appCore.selectedTab,
+                    onSelect: selectTab(_:)
+                )
             }
-
-            Tab(AppTab.settings.title, systemImage: AppTab.settings.systemImage, value: AppTab.settings) {
-                NavigationStack {
-                    SettingsView(viewModel: settingsViewModel)
-                }
-            }
-        }
+            .animation(.snappy(duration: 0.26), value: appCore.selectedTab)
     }
 }
 
 private extension TabsView {
-    var selectionBinding: Binding<AppTab> {
-        Binding(
-            get: { appCore.selectedTab },
-            set: { appCore.selectedTab = $0 }
-        )
+    @ViewBuilder
+    var currentTabView: some View {
+        switch appCore.selectedTab {
+        case .calendar:
+            NavigationStack {
+                HomeView(viewModel: homeViewModel)
+            }
+
+        case .todo:
+            NavigationStack {
+                TodoView(viewModel: todoViewModel)
+            }
+
+        case .ideas:
+            NavigationStack {
+                IdeasView(viewModel: ideasViewModel)
+            }
+        }
     }
 
-    var homePathBinding: Binding<[String]> {
-        Binding(
-            get: { appCore.homePath },
-            set: { appCore.homePath = $0 }
-        )
+    func selectTab(_ tab: AppTab) {
+        withAnimation(.snappy(duration: 0.26)) {
+            appCore.selectedTab = tab
+        }
     }
+}
+
+#Preview {
+    let appCore = PreviewAppCore.make()
+    return TabsView(appCore: appCore)
+        .previewAppCore(appCore)
 }

@@ -8,6 +8,6 @@
 import Foundation
 
 struct AppRepositories {
-    let homeRepository: any HomeRepositoryProtocol
+    let plannerDashboardRepository: any PlannerDashboardRepositoryProtocol
     let deepLinkHistoryRepository: any DeepLinkHistoryRepositoryProtocol
 }

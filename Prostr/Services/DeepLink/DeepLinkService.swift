@@ -34,10 +34,13 @@ struct AppDeepLinkService: DeepLinkServiceProtocol {
 
         switch host {
         case "home":
-            return .tab(.home)
-
-        case "settings":
-            return .tab(.settings)
+            return .tab(.calendar)
+        case "calendar":
+            return .tab(.calendar)
+        case "todo":
+            return .tab(.todo)
+        case "ideas":
+            return .tab(.ideas)
 
         case "feature":
             guard let id = value("id"), !id.isEmpty else {

@@ -18,7 +18,7 @@ final class AppCore {
     private(set) var selectedThemeMode: ThemeMode = .system
     private(set) var lastHandledRoute: DeepLinkRoute?
 
-    var selectedTab: AppTab = .home
+    var selectedTab: AppTab = .calendar
     var homePath: [String] = []
 
     init(services: AppServices, repositories: AppRepositories) {
@@ -79,12 +79,12 @@ private extension AppCore {
         switch route {
         case let .tab(tab):
             selectedTab = tab
-            if tab == .home {
+            if tab == .calendar {
                 homePath.removeAll()
             }
 
         case let .feature(id):
-            selectedTab = .home
+            selectedTab = .calendar
             homePath = [id]
         }
     }
