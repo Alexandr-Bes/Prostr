@@ -17,6 +17,7 @@ final class AppCore {
     private(set) var isBootstrapped = false
     private(set) var selectedThemeMode: ThemeMode = .system
     private(set) var lastHandledRoute: DeepLinkRoute?
+    private(set) var pendingCalendarDateSelection: Date?
 
     var selectedTab: AppTab = .calendar
     var homePath: [String] = []
@@ -26,8 +27,8 @@ final class AppCore {
         self.repositories = repositories
     }
 
-    var appTheme: AppTheme {
-        services.themeService.theme
+    func appTheme(for systemColorScheme: ColorScheme) -> AppTheme {
+        services.themeService.theme(for: resolvedColorScheme(using: systemColorScheme))
     }
 
     var preferredColorScheme: ColorScheme? {
@@ -70,11 +71,27 @@ final class AppCore {
     func makeURL(for route: DeepLinkRoute) -> URL? {
         services.deepLinkService.makeURL(for: route)
     }
+
+    func consumePendingCalendarDateSelection() {
+        pendingCalendarDateSelection = nil
+    }
 }
 
 private extension AppCore {
+    func resolvedColorScheme(using systemColorScheme: ColorScheme) -> ColorScheme {
+        switch selectedThemeMode {
+        case .system:
+            return systemColorScheme
+        case .light:
+            return .light
+        case .dark:
+            return .dark
+        }
+    }
+
     func apply(route: DeepLinkRoute) {
         lastHandledRoute = route
+        pendingCalendarDateSelection = nil
 
         switch route {
         case let .tab(tab):
@@ -82,6 +99,11 @@ private extension AppCore {
             if tab == .calendar {
                 homePath.removeAll()
             }
+
+        case let .calendar(date):
+            selectedTab = .calendar
+            homePath.removeAll()
+            pendingCalendarDateSelection = date
 
         case let .feature(id):
             selectedTab = .calendar

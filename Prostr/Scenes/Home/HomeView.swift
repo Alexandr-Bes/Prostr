@@ -24,18 +24,13 @@ struct HomeView: View {
         }
         .background(PlannerBackgroundView().ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle(viewModel.screenTitle)
+        .navigationSubtitle(viewModel.selectedDateTitle)
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                PlannerScreenHeaderView(
-                    title: viewModel.screenTitle,
-                    subtitle: viewModel.selectedDateTitle
-                )
-            }
-
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                 } label: {
-                    Image(systemName: "calendar.badge.clock")
+                    Image(systemName: "line.3.horizontal.decrease")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(theme.primaryText)
                 }
@@ -43,6 +38,12 @@ struct HomeView: View {
         }
         .task {
             await viewModel.loadIfNeeded()
+        }
+        .task(id: appCore.pendingCalendarDateSelection) {
+            guard let date = appCore.pendingCalendarDateSelection else { return }
+
+            viewModel.applyDeepLink(date: date)
+            appCore.consumePendingCalendarDateSelection()
         }
     }
 }
@@ -67,10 +68,12 @@ private extension HomeView {
                 PlannerCalendarView(
                     monthTitle: viewModel.monthTitle,
                     weekdaySymbols: viewModel.weekdaySymbols,
-                    days: viewModel.calendarDays,
-                    onPreviousMonth: { viewModel.shiftMonth(by: -1) },
-                    onNextMonth: { viewModel.shiftMonth(by: 1) },
-                    onSelectDay: viewModel.selectDay(_:)
+                    weeks: viewModel.calendarWeeks,
+                    displayMode: viewModel.calendarDisplayMode,
+                    onPreviousPeriod: { viewModel.shiftVisiblePeriod(by: -1) },
+                    onNextPeriod: { viewModel.shiftVisiblePeriod(by: 1) },
+                    onSelectDay: viewModel.selectDate(_:),
+                    onToggleDisplayMode: viewModel.toggleCalendarDisplayMode
                 )
             } else {
                 PlannerAgendaSectionView(cards: viewModel.cards)

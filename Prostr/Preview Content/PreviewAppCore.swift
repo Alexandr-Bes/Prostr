@@ -22,9 +22,12 @@ extension View {
     }
 
     func previewAppCore(_ appCore: AppCore) -> some View {
-        environment(appCore)
-            .appTheme(appCore.appTheme)
+        let previewColorScheme = appCore.preferredColorScheme ?? .light
+        let theme = appCore.appTheme(for: previewColorScheme)
+
+        return environment(appCore)
+            .appTheme(theme)
             .preferredColorScheme(appCore.preferredColorScheme)
-            .tint(appCore.appTheme.accentTint)
+            .tint(theme.accentTint)
     }
 }

@@ -9,8 +9,7 @@ import SwiftUI
 
 struct AppTheme {
     let accentTint: Color
-    let canvasTop: Color
-    let canvasBottom: Color
+    let background: Color
     let ambientGlowTop: Color
     let ambientGlowBottom: Color
     let cardBackground: Color
@@ -32,31 +31,57 @@ struct AppTheme {
     let tabBarInactiveBackground: Color
     let tabBarActiveBackground: Color
 
-    static let `default` = AppTheme(
-        accentTint: Color(red: 0.86, green: 0.45, blue: 0.31),
-        canvasTop: Color(red: 0.98, green: 0.96, blue: 0.93), //FAFAFC
-        canvasBottom: Color(red: 0.93, green: 0.89, blue: 0.83),
-        ambientGlowTop: Color(red: 0.99, green: 0.86, blue: 0.76, opacity: 0.75),
-        ambientGlowBottom: Color(red: 0.37, green: 0.31, blue: 0.26, opacity: 0.10),
-        cardBackground: Color(red: 0.99, green: 0.97, blue: 0.95),
-        secondaryCardBackground: Color(red: 0.95, green: 0.91, blue: 0.86),
-        overlaySurface: Color(red: 0.12, green: 0.11, blue: 0.10, opacity: 0.05),
-        cardBorder: Color(red: 0.16, green: 0.14, blue: 0.11, opacity: 0.08),
-        cardShadow: Color(red: 0.15, green: 0.12, blue: 0.10, opacity: 0.12),
-        primaryText: Color(red: 0.12, green: 0.11, blue: 0.10),
-        secondaryText: Color(red: 0.38, green: 0.34, blue: 0.30),
-        tertiaryText: Color(red: 0.59, green: 0.54, blue: 0.49),
-        inverseText: Color.white,
-        successTint: Color(red: 0.24, green: 0.53, blue: 0.41),
-        warningTint: Color(red: 0.79, green: 0.54, blue: 0.21),
-        dangerTint: Color(red: 0.80, green: 0.35, blue: 0.29),
-        accentSoft: Color(red: 0.98, green: 0.89, blue: 0.84),
-        heroStart: Color(red: 0.18, green: 0.16, blue: 0.15),
-        heroEnd: Color(red: 0.36, green: 0.31, blue: 0.28),
-        tabBarBackground: Color(red: 0.98, green: 0.96, blue: 0.93),
-        tabBarInactiveBackground: Color(red: 0.94, green: 0.90, blue: 0.84),
-        tabBarActiveBackground: Color(red: 0.16, green: 0.15, blue: 0.14)
+    static let light = AppTheme(
+        accentTint: Color(hex: "E6774A"),
+        background: Color(hex: "FAFAFC"),
+        ambientGlowTop: Color(hex: "FFE2C8", opacity: 0.75),
+        ambientGlowBottom: Color(hex: "5E5044", opacity: 0.10),
+        cardBackground: .white,
+        secondaryCardBackground: Color(hex: "F5EFE8"),
+        overlaySurface: Color(hex: "1F1C1A", opacity: 0.05),
+        cardBorder: Color(hex: "1F1C1A", opacity: 0.08),
+        cardShadow: Color(hex: "261F1A", opacity: 0.12),
+        primaryText: Color(hex: "201D1B"),
+        secondaryText: Color(hex: "625852"),
+        tertiaryText: Color(hex: "9A8F87"),
+        inverseText: .white,
+        successTint: Color(hex: "4CA67A"),
+        warningTint: Color(hex: "C98844"),
+        dangerTint: Color(hex: "D55E4B"),
+        accentSoft: Color(hex: "FDEADF"),
+        heroStart: Color(hex: "2E2926"),
+        heroEnd: Color(hex: "5C4F46"),
+        tabBarBackground: Color(hex: "FAF7F2"),
+        tabBarInactiveBackground: Color(hex: "EEE8E1"),
+        tabBarActiveBackground: Color(hex: "1E1B1A")
     )
+
+    static let dark = AppTheme(
+        accentTint: Color(hex: "F08A5F"),
+        background: Color(hex: "090909"),
+        ambientGlowTop: Color(hex: "40271C", opacity: 0.35),
+        ambientGlowBottom: Color(hex: "050505", opacity: 0.18),
+        cardBackground: .black,
+        secondaryCardBackground: Color(hex: "141414"),
+        overlaySurface: Color.white.opacity(0.06),
+        cardBorder: Color.white.opacity(0.08),
+        cardShadow: Color.black.opacity(0.42),
+        primaryText: Color(hex: "F8F6F3"),
+        secondaryText: Color(hex: "B5AEA8"),
+        tertiaryText: Color(hex: "7F7A75"),
+        inverseText: .black,
+        successTint: Color(hex: "62C297"),
+        warningTint: Color(hex: "E2A86B"),
+        dangerTint: Color(hex: "F08C7A"),
+        accentSoft: Color(hex: "2A211C"),
+        heroStart: Color(hex: "050505"),
+        heroEnd: Color(hex: "151515"),
+        tabBarBackground: Color(hex: "0D0D0D"),
+        tabBarInactiveBackground: Color(hex: "1A1A1A"),
+        tabBarActiveBackground: Color(hex: "F7F3EE")
+    )
+
+    static let `default` = light
 }
 
 private struct AppThemeKey: EnvironmentKey {

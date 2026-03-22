@@ -8,16 +8,19 @@
 import SwiftUI
 
 struct RootView: View {
+    @Environment(\.colorScheme) private var systemColorScheme
     @State private var appCore: AppCore?
 
     var body: some View {
         Group {
             if let appCore {
+                let theme = appCore.appTheme(for: systemColorScheme)
+
                 TabsView(appCore: appCore)
                     .environment(appCore)
-                    .appTheme(appCore.appTheme)
+                    .appTheme(theme)
                     .preferredColorScheme(appCore.preferredColorScheme)
-                    .tint(appCore.appTheme.accentTint)
+                    .tint(theme.accentTint)
                     .onOpenURL { url in
                         appCore.handleIncomingURL(url)
                     }

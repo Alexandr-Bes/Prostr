@@ -40,7 +40,7 @@ enum ThemeMode: String, CaseIterable, Identifiable, Codable {
 
 @MainActor
 protocol ThemeServiceProtocol {
-    var theme: AppTheme { get }
+    func theme(for colorScheme: ColorScheme) -> AppTheme
     func loadThemeMode() -> ThemeMode
     func saveThemeMode(_ mode: ThemeMode)
 }
@@ -57,8 +57,15 @@ final class ThemeService: ThemeServiceProtocol {
         self.localStorage = localStorage
     }
 
-    var theme: AppTheme {
-        .default
+    func theme(for colorScheme: ColorScheme) -> AppTheme {
+        switch colorScheme {
+        case .light:
+            return .light
+        case .dark:
+            return .dark
+        @unknown default:
+            return .default
+        }
     }
 
     func loadThemeMode() -> ThemeMode {

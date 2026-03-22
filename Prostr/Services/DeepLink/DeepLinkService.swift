@@ -36,6 +36,11 @@ struct AppDeepLinkService: DeepLinkServiceProtocol {
         case "home":
             return .tab(.calendar)
         case "calendar":
+            if let rawDate = value("date"),
+               let date = AppDateFormatter.plannerDeepLinkDate(from: rawDate) {
+                return .calendar(date: date)
+            }
+
             return .tab(.calendar)
         case "todo":
             return .tab(.todo)
@@ -61,6 +66,12 @@ struct AppDeepLinkService: DeepLinkServiceProtocol {
         switch route {
         case let .tab(tab):
             components.host = tab.rawValue
+
+        case let .calendar(date):
+            components.host = "calendar"
+            components.queryItems = [
+                URLQueryItem(name: "date", value: AppDateFormatter.plannerDeepLinkDateString(from: date))
+            ]
 
         case let .feature(id):
             components.host = "feature"

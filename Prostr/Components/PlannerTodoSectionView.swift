@@ -25,7 +25,7 @@ struct PlannerTodoSectionView: View {
     }
 
     var body: some View {
-        PlannerSurfaceCard {
+        PlannerSurfaceCard(backgroundColor: theme.cardBackground) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Text("To-do list")

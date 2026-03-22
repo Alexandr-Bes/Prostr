@@ -20,7 +20,7 @@ final class TodoViewModel {
         self.plannerDashboardRepository = plannerDashboardRepository
     }
 
-    init(previewDashboard: PlannerDashboard = PlannerDashboardMockData.dashboard) {
+    init(previewDashboard: PlannerDashboard) {
         self.plannerDashboardRepository = PlannerDashboardRepository(service: MockPlannerDashboardService())
         self.items = previewDashboard.todoItems
         self.hasLoaded = true

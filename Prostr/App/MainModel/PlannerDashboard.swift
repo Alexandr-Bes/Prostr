@@ -11,7 +11,6 @@ struct PlannerDashboard: Hashable {
     let screenTitle: String
     let visibleMonth: Date
     let selectedDate: Date
-    let markedDayNumbers: Set<Int>
     let cards: [PlannerContentCard]
     let todoItems: [PlannerTodoItem]
     let ideas: [PlannerIdea]
@@ -29,6 +28,17 @@ struct PlannerContentCard: Identifiable, Hashable {
 
     var effectiveDisplayDate: Date {
         postDate ?? createdAt
+    }
+
+    var calendarMarker: PlannerCalendarMarker? {
+        switch state {
+        case .planned:
+            return .planned
+        case .scheduled:
+            return .scheduled
+        case .draft:
+            return nil
+        }
     }
 }
 
@@ -74,6 +84,7 @@ struct PlannerTodoItem: Identifiable, Hashable {
     let id: String
     let title: String
     let state: PlannerTodoState
+    let dueDate: Date
 }
 
 enum PlannerTodoState: Hashable {
@@ -123,10 +134,34 @@ enum PlannerHomeMode: String, CaseIterable, Identifiable, Hashable {
     }
 }
 
+enum PlannerCalendarDisplayMode: String, Hashable {
+    case month
+    case week
+
+    mutating func toggle() {
+        self = self == .month ? .week : .month
+    }
+}
+
+enum PlannerCalendarMarker: String, Hashable, CaseIterable {
+    case scheduled
+    case planned
+
+    var sortOrder: Int {
+        switch self {
+        case .scheduled:
+            return 0
+        case .planned:
+            return 1
+        }
+    }
+}
+
 struct PlannerCalendarDay: Identifiable, Hashable {
     let id: String
-    let dayNumber: Int?
+    let date: Date
+    let dayNumber: Int
     let isSelected: Bool
-    let isMarked: Bool
     let isWithinDisplayedMonth: Bool
+    let markers: [PlannerCalendarMarker]
 }

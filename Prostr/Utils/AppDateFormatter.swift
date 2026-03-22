@@ -32,6 +32,21 @@ enum AppDateFormatter {
         return formatter
     }()
 
+    private static let plannerDeepLinkDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
+    private static let plannerLongDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
+
     static func relativeString(from date: Date) -> String {
         relativeFormatter.localizedString(for: date, relativeTo: .now).capitalized
     }
@@ -46,5 +61,17 @@ enum AppDateFormatter {
 
     static func plannerCardDateString(from date: Date) -> String {
         plannerCardDateFormatter.string(from: date)
+    }
+
+    static func plannerDeepLinkDateString(from date: Date) -> String {
+        plannerDeepLinkDateFormatter.string(from: date)
+    }
+
+    static func plannerDeepLinkDate(from string: String) -> Date? {
+        plannerDeepLinkDateFormatter.date(from: string)
+    }
+
+    static func plannerLongDateString(from date: Date) -> String {
+        plannerLongDateFormatter.string(from: date)
     }
 }

@@ -12,115 +12,176 @@ struct PlannerCalendarView: View {
 
     let monthTitle: String
     let weekdaySymbols: [String]
-    let days: [PlannerCalendarDay]
-    let onPreviousMonth: () -> Void
-    let onNextMonth: () -> Void
-    let onSelectDay: (Int) -> Void
+    let weeks: [[PlannerCalendarDay]]
+    let displayMode: PlannerCalendarDisplayMode
+    let onPreviousPeriod: () -> Void
+    let onNextPeriod: () -> Void
+    let onSelectDay: (Date) -> Void
+    let onToggleDisplayMode: () -> Void
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 7)
+    private let selectionTint = Color(hex: "3485CA")
 
     var body: some View {
-        PlannerSurfaceCard {
-            VStack(alignment: .leading, spacing: 20) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Calendar")
-                            .font(.system(.caption, design: .rounded, weight: .bold))
-                            .foregroundStyle(theme.tertiaryText)
-                            .textCase(.uppercase)
-
-                        Text(monthTitle)
-                            .font(.system(.headline, design: .rounded, weight: .bold))
-                            .foregroundStyle(theme.primaryText)
-                    }
-
-                    Spacer()
-
-                    HStack(spacing: 8) {
-                        calendarButton(systemName: "chevron.left", action: onPreviousMonth)
-                        calendarButton(systemName: "chevron.right", action: onNextMonth)
-                    }
-                }
-
-                LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(weekdaySymbols, id: \.self) { symbol in
-                        Text(symbol)
-                            .font(.system(.caption, design: .rounded, weight: .bold))
-                            .foregroundStyle(theme.tertiaryText)
-                            .frame(maxWidth: .infinity)
-                    }
-
-                    ForEach(days) { day in
-                        calendarDayCell(for: day)
-                    }
-                }
-            }
+        VStack(spacing: 0) {
+            header
+            weekdayHeader
+            weeksGrid
+            collapseHandle
         }
+        .padding(.top, 12)
+        .padding(.horizontal, 12)
+        .padding(.bottom, 10)
+        .background(theme.cardBackground, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(theme.cardBorder, lineWidth: 1)
+        )
+        .shadow(color: theme.cardShadow, radius: 18, y: 10)
+        .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .simultaneousGesture(horizontalSwipeGesture)
+        .animation(.snappy(duration: 0.22), value: weeks)
+        .animation(.snappy(duration: 0.22), value: displayMode)
     }
 }
 
 private extension PlannerCalendarView {
-    func calendarButton(systemName: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .font(.system(size: 12, weight: .bold))
+    var header: some View {
+        HStack {
+            navigationButton(systemName: "chevron.left", action: onPreviousPeriod)
+
+            Spacer(minLength: 16)
+
+            Text(monthTitle)
+                .font(.system(.headline, design: .rounded, weight: .semibold))
                 .foregroundStyle(theme.primaryText)
-                .frame(width: 34, height: 34)
-                .background(theme.secondaryCardBackground, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+            Spacer(minLength: 16)
+
+            navigationButton(systemName: "chevron.right", action: onNextPeriod)
         }
-        .buttonStyle(.plain)
+        .padding(.bottom, 10)
     }
 
-    func calendarDayCell(for day: PlannerCalendarDay) -> some View {
-        Group {
-            if let dayNumber = day.dayNumber {
-                Button {
-                    onSelectDay(dayNumber)
-                } label: {
-                    VStack(spacing: 6) {
-                        Text(String(dayNumber))
-                            .font(.system(.subheadline, design: .rounded, weight: .semibold))
-                            .foregroundStyle(dayTextColor(for: day))
-                            .frame(maxWidth: .infinity, minHeight: 42)
-                            .background(dayBackground(for: day))
+    var weekdayHeader: some View {
+        HStack(spacing: 0) {
+            ForEach(weekdaySymbols, id: \.self) { symbol in
+                Text(symbol)
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundStyle(theme.tertiaryText)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.bottom, 10)
+    }
 
-                        Circle()
-                            .fill(day.isMarked ? dayIndicatorColor(for: day) : .clear)
-                            .frame(width: 6, height: 6)
+    var weeksGrid: some View {
+        VStack(spacing: displayMode == .month ? 12 : 10) {
+            ForEach(Array(weeks.enumerated()), id: \.offset) { weekEntry in
+                HStack(spacing: 0) {
+                    ForEach(weekEntry.element) { day in
+                        dayCell(for: day)
                     }
-                    .frame(height: 56)
                 }
-                .buttonStyle(.plain)
-            } else {
-                Color.clear
-                    .frame(height: 56)
             }
         }
     }
 
+    var collapseHandle: some View {
+        Capsule()
+            .fill(theme.cardBorder.opacity(0.9))
+            .frame(width: 34, height: 4)
+            .padding(.top, 14)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onToggleDisplayMode)
+            .gesture(verticalToggleGesture)
+    }
+
+    func navigationButton(systemName: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(theme.primaryText)
+                .frame(width: 28, height: 28)
+        }
+        .buttonStyle(.plain)
+    }
+
+    func dayCell(for day: PlannerCalendarDay) -> some View {
+        Button {
+            onSelectDay(day.date)
+        } label: {
+            VStack(spacing: 5) {
+                Text(String(day.dayNumber))
+                    .font(.system(.body, design: .rounded, weight: .medium))
+                    .foregroundStyle(dayTextColor(for: day))
+                    .frame(width: 32, height: 32)
+                    .background(day.isSelected ? selectionTint : Color.clear, in: Circle())
+
+                markersRow(for: day)
+                    .frame(height: 8)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 0)
+        }
+        .buttonStyle(.plain)
+    }
+
+    func markersRow(for day: PlannerCalendarDay) -> some View {
+        HStack(spacing: 4) {
+            if day.markers.isEmpty {
+                Color.clear
+                    .frame(width: 8, height: 8)
+            } else {
+                ForEach(day.markers, id: \.self) { marker in
+                    markerDot(for: marker)
+                }
+            }
+        }
+    }
+
+    func markerDot(for marker: PlannerCalendarMarker) -> some View {
+        Circle()
+            .strokeBorder(selectionTint, lineWidth: marker == .planned ? 1.2 : 0)
+            .background(
+                Circle()
+                    .fill(marker == .scheduled ? selectionTint : Color.clear)
+            )
+            .frame(width: 5, height: 5)
+    }
+
     func dayTextColor(for day: PlannerCalendarDay) -> Color {
         if day.isSelected {
-            return theme.inverseText
+            return .white
         }
 
-        if day.isWithinDisplayedMonth {
-            return theme.primaryText
-        }
-
-        return .clear
+        return day.isWithinDisplayedMonth ? theme.primaryText : theme.tertiaryText
     }
 
-    @ViewBuilder
-    func dayBackground(for day: PlannerCalendarDay) -> some View {
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .fill(day.isSelected ? theme.tabBarActiveBackground : day.isMarked ? theme.accentSoft.opacity(0.8) : Color.clear)
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(day.isSelected ? Color.clear : theme.cardBorder, lineWidth: day.isMarked ? 0 : 1)
-            )
+    var horizontalSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 18)
+            .onEnded { value in
+                guard abs(value.translation.width) > abs(value.translation.height),
+                      abs(value.translation.width) > 30 else {
+                    return
+                }
+
+                if value.translation.width < 0 {
+                    onNextPeriod()
+                } else {
+                    onPreviousPeriod()
+                }
+            }
     }
 
-    func dayIndicatorColor(for day: PlannerCalendarDay) -> Color {
-        day.isSelected ? theme.inverseText.opacity(0.75) : theme.accentTint
+    var verticalToggleGesture: some Gesture {
+        DragGesture(minimumDistance: 10)
+            .onEnded { value in
+                guard abs(value.translation.height) > abs(value.translation.width),
+                      abs(value.translation.height) > 10 else {
+                    return
+                }
+
+                onToggleDisplayMode()
+            }
     }
 }

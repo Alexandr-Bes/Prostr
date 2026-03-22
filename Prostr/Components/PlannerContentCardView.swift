@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct PlannerContentCardView: View {
-    @Environment(\.appTheme) private var theme
-
     let card: PlannerContentCard
 
     var body: some View {
@@ -22,17 +20,17 @@ struct PlannerContentCardView: View {
 
                     Text(AppDateFormatter.plannerCardDateString(from: card.effectiveDisplayDate))
                         .font(.system(.caption2, design: .rounded, weight: .bold))
-                        .foregroundStyle(theme.primaryText)
+                        .foregroundStyle(palette.primaryText)
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
                     Text(card.title)
                         .font(.system(.title3, design: .rounded, weight: .bold))
-                        .foregroundStyle(theme.primaryText)
+                        .foregroundStyle(palette.primaryText)
 
                     Text(card.subtitle)
                         .font(.system(.subheadline, design: .rounded))
-                        .foregroundStyle(theme.secondaryText)
+                        .foregroundStyle(palette.secondaryText)
                 }
 
                 Spacer(minLength: 12)
@@ -49,9 +47,9 @@ struct PlannerContentCardView: View {
         .background(backgroundGradient, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(theme.cardBorder.opacity(0.85), lineWidth: 1)
+                .stroke(palette.border, lineWidth: 1)
         )
-        .shadow(color: theme.cardShadow, radius: 16, y: 10)
+        .shadow(color: palette.shadow, radius: 16, y: 10)
     }
 }
 
@@ -89,10 +87,10 @@ private extension PlannerContentCardView {
             Text(card.platform.shortTitle)
                 .font(.system(.caption, design: .rounded, weight: .bold))
         }
-        .foregroundStyle(theme.primaryText)
+        .foregroundStyle(palette.primaryText)
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background(.white.opacity(0.68), in: Capsule())
+        .background(palette.softSurface, in: Capsule())
     }
 
     var footerBadge: some View {
@@ -103,10 +101,10 @@ private extension PlannerContentCardView {
             Text(card.imageAssetName == nil ? "Media pending" : "Image attached")
                 .font(.system(.caption, design: .rounded, weight: .semibold))
         }
-        .foregroundStyle(theme.secondaryText)
+        .foregroundStyle(palette.secondaryText)
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
-        .background(.white.opacity(0.58), in: Capsule())
+        .background(palette.softSurface.opacity(0.92), in: Capsule())
     }
 
     var statusSymbolName: String {
@@ -143,7 +141,7 @@ private extension PlannerContentCardView {
                 .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(.white.opacity(0.30), lineWidth: 1)
+                        .stroke(Color.white.opacity(0.30), lineWidth: 1)
                 )
                 .overlay(
                     LinearGradient(
@@ -155,7 +153,7 @@ private extension PlannerContentCardView {
                 )
 
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.white.opacity(0.86))
+                .fill(palette.softSurface)
                 .frame(width: 38, height: 38)
                 .overlay(
                     Image(systemName: "photo.stack")
@@ -170,7 +168,7 @@ private extension PlannerContentCardView {
     var placeholderPreview: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(.white.opacity(0.42))
+                .fill(palette.softSurface.opacity(0.52))
                 .frame(width: 116, height: 160)
                 .offset(x: -10, y: 8)
 
@@ -182,19 +180,19 @@ private extension PlannerContentCardView {
     var layeredPreview: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.white.opacity(0.44))
+                .fill(Color.white.opacity(0.44))
                 .frame(width: 92, height: 130)
                 .rotationEffect(.degrees(-14))
                 .offset(x: -10, y: 8)
 
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.white.opacity(0.58))
+                .fill(Color.white.opacity(0.58))
                 .frame(width: 92, height: 130)
                 .rotationEffect(.degrees(-4))
                 .offset(x: 4, y: 2)
 
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.white.opacity(0.94))
+                .fill(Color.white.opacity(0.94))
                 .frame(width: 92, height: 130)
                 .overlay(
                     VStack(alignment: .leading, spacing: 8) {
@@ -203,11 +201,11 @@ private extension PlannerContentCardView {
                             .frame(height: 14)
 
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(theme.secondaryCardBackground)
+                            .fill(Color.white.opacity(0.72))
                             .frame(height: 10)
 
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(theme.secondaryCardBackground)
+                            .fill(Color.white.opacity(0.72))
                             .frame(height: 10)
 
                         Spacer(minLength: 0)
@@ -225,24 +223,36 @@ private extension PlannerContentCardView {
         switch card.state {
         case .planned:
             return CardPalette(
-                backgroundTop: Color(red: 0.98, green: 0.95, blue: 0.92),
-                backgroundBottom: Color(red: 0.95, green: 0.89, blue: 0.82),
-                accent: Color(red: 0.67, green: 0.40, blue: 0.23),
-                chipBackground: Color(red: 0.98, green: 0.88, blue: 0.78)
+                backgroundTop: Color(hex: "C9EFF1"),
+                backgroundBottom: Color(hex: "F3FEFF"),
+                accent: Color(hex: "4B8F90"),
+                chipBackground: Color.white.opacity(0.72),
+                primaryText: Color(hex: "1A2525"),
+                secondaryText: Color(hex: "536564"),
+                border: Color.black.opacity(0.05),
+                shadow: Color.black.opacity(0.08)
             )
         case .scheduled:
             return CardPalette(
-                backgroundTop: Color(red: 0.92, green: 0.96, blue: 0.91),
-                backgroundBottom: Color(red: 0.86, green: 0.91, blue: 0.85),
-                accent: Color(red: 0.28, green: 0.48, blue: 0.33),
-                chipBackground: Color(red: 0.81, green: 0.91, blue: 0.80)
+                backgroundTop: Color(hex: "D4EDFF"),
+                backgroundBottom: Color(hex: "F1F9FF"),
+                accent: Color(hex: "4C87B1"),
+                chipBackground: Color.white.opacity(0.72),
+                primaryText: Color(hex: "1C242D"),
+                secondaryText: Color(hex: "566370"),
+                border: Color.black.opacity(0.05),
+                shadow: Color.black.opacity(0.08)
             )
         case .draft:
             return CardPalette(
-                backgroundTop: Color(red: 0.99, green: 0.93, blue: 0.89),
-                backgroundBottom: Color(red: 0.97, green: 0.86, blue: 0.79),
-                accent: Color(red: 0.77, green: 0.49, blue: 0.30),
-                chipBackground: Color(red: 0.99, green: 0.86, blue: 0.76)
+                backgroundTop: Color(hex: "FBFBFE"),
+                backgroundBottom: Color(hex: "EDEFFF"),
+                accent: Color(hex: "7A82C6"),
+                chipBackground: Color.white.opacity(0.72),
+                primaryText: Color(hex: "232536"),
+                secondaryText: Color(hex: "61657C"),
+                border: Color.black.opacity(0.05),
+                shadow: Color.black.opacity(0.08)
             )
         }
     }
@@ -253,4 +263,12 @@ private struct CardPalette {
     let backgroundBottom: Color
     let accent: Color
     let chipBackground: Color
+    let primaryText: Color
+    let secondaryText: Color
+    let border: Color
+    let shadow: Color
+
+    var softSurface: Color {
+        chipBackground
+    }
 }

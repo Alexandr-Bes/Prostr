@@ -12,23 +12,25 @@ struct PlannerBackgroundView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [theme.canvasTop, theme.canvasBottom],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            Rectangle()
+                .fill(theme.background)
+//            LinearGradient(
+//                colors: [theme.canvasTop, theme.canvasBottom],
+//                startPoint: .topLeading,
+//                endPoint: .bottomTrailing
+//            )
 
-            Circle()
-                .fill(theme.ambientGlowTop)
-                .frame(width: 260, height: 260)
-                .blur(radius: 12)
-                .offset(x: -120, y: -220)
+//            Circle()
+//                .fill(theme.ambientGlowTop)
+//                .frame(width: 260, height: 260)
+//                .blur(radius: 12)
+//                .offset(x: -120, y: -220)
 
-            Ellipse()
-                .fill(theme.ambientGlowBottom)
-                .frame(width: 360, height: 300)
-                .blur(radius: 36)
-                .offset(x: 160, y: 250)
+//            Ellipse()
+//                .fill(theme.ambientGlowBottom)
+//                .frame(width: 360, height: 300)
+//                .blur(radius: 36)
+//                .offset(x: 160, y: 250)
         }
     }
 }

@@ -20,7 +20,7 @@ final class IdeasViewModel {
         self.plannerDashboardRepository = plannerDashboardRepository
     }
 
-    init(previewDashboard: PlannerDashboard = PlannerDashboardMockData.dashboard) {
+    init(previewDashboard: PlannerDashboard) {
         self.plannerDashboardRepository = PlannerDashboardRepository(service: MockPlannerDashboardService())
         self.ideas = previewDashboard.ideas
         self.hasLoaded = true

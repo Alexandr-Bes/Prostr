@@ -12,34 +12,45 @@ import Observation
 @MainActor
 final class HomeViewModel {
     private let plannerDashboardRepository: any PlannerDashboardRepositoryProtocol
+    private let calendarBuilder: PlannerCalendarBuilder
 
     private var hasLoaded = false
-    private var calendar = Calendar(identifier: .gregorian)
+    private var retainedSelectedDate: Date
 
     private(set) var dashboard: PlannerDashboard?
-    private(set) var visibleMonth: Date = .now
-    private(set) var selectedDate: Date = .now
+    private(set) var visibleMonth: Date
+    private(set) var selectedDate: Date
     private(set) var isLoading = false
     private(set) var errorMessage: String?
+    private(set) var calendarDisplayMode: PlannerCalendarDisplayMode = .month
     var displayMode: PlannerHomeMode = .calendar
 
     init(plannerDashboardRepository: any PlannerDashboardRepositoryProtocol) {
+        let calendarBuilder = PlannerCalendarBuilder()
+        let today = calendarBuilder.normalizedDay(.now)
+
         self.plannerDashboardRepository = plannerDashboardRepository
-        self.calendar.firstWeekday = 1
+        self.calendarBuilder = calendarBuilder
+        self.visibleMonth = calendarBuilder.startOfMonth(for: today)
+        self.selectedDate = today
+        self.retainedSelectedDate = today
     }
 
-    init(previewDashboard: PlannerDashboard = PlannerDashboardMockData.dashboard) {
+    init(previewDashboard: PlannerDashboard) {
+        let calendarBuilder = PlannerCalendarBuilder()
+        let initialSelection = calendarBuilder.normalizedDay(previewDashboard.selectedDate)
+
         self.plannerDashboardRepository = PlannerDashboardRepository(service: MockPlannerDashboardService())
+        self.calendarBuilder = calendarBuilder
         self.dashboard = previewDashboard
-        self.visibleMonth = previewDashboard.visibleMonth
-        self.selectedDate = previewDashboard.selectedDate
+        self.visibleMonth = calendarBuilder.startOfMonth(for: initialSelection)
+        self.selectedDate = initialSelection
+        self.retainedSelectedDate = initialSelection
         self.hasLoaded = true
-        self.calendar.firstWeekday = 1
     }
 
     func loadIfNeeded() async {
         guard !hasLoaded else { return }
-
         await reload()
     }
 
@@ -54,8 +65,10 @@ final class HomeViewModel {
         do {
             let dashboard = try await plannerDashboardRepository.fetchDashboard()
             self.dashboard = dashboard
-            visibleMonth = dashboard.visibleMonth
-            selectedDate = dashboard.selectedDate
+
+            let preferredSelection = retainedSelectedDate
+            selectedDate = preferredSelection
+            visibleMonth = calendarBuilder.startOfMonth(for: preferredSelection)
             hasLoaded = true
         } catch {
             errorMessage = "The planner dashboard could not be loaded right now."
@@ -67,20 +80,25 @@ final class HomeViewModel {
         displayMode = mode
     }
 
-    func shiftMonth(by value: Int) {
-        guard let shiftedMonth = calendar.date(byAdding: .month, value: value, to: visibleMonth) else { return }
-        visibleMonth = shiftedMonth
-
-        guard !calendar.isDate(selectedDate, equalTo: shiftedMonth, toGranularity: .month) else { return }
-        selectedDate = preferredSelectionDate(for: shiftedMonth)
+    func shiftVisiblePeriod(by value: Int) {
+        switch calendarDisplayMode {
+        case .month:
+            shiftMonth(by: value)
+        case .week:
+            shiftWeek(by: value)
+        }
     }
 
-    func selectDay(_ day: Int) {
-        var components = calendar.dateComponents([.year, .month], from: visibleMonth)
-        components.day = day
+    func selectDate(_ date: Date) {
+        applySelection(date)
+    }
 
-        guard let selectedDate = calendar.date(from: components) else { return }
-        self.selectedDate = selectedDate
+    func applyDeepLink(date: Date) {
+        applySelection(date)
+    }
+
+    func toggleCalendarDisplayMode() {
+        calendarDisplayMode.toggle()
     }
 
     var screenTitle: String {
@@ -96,86 +114,60 @@ final class HomeViewModel {
     }
 
     var weekdaySymbols: [String] {
-        calendar.shortStandaloneWeekdaySymbols.map { String($0.prefix(2)) }
+        calendarBuilder.weekdaySymbols()
     }
 
     var cards: [PlannerContentCard] {
-        dashboard?.cards ?? []
+        allCards.filter { calendarBuilder.isSameDay($0.effectiveDisplayDate, selectedDate) }
     }
 
     var todoItems: [PlannerTodoItem] {
-        dashboard?.todoItems ?? []
+        (dashboard?.todoItems ?? []).filter { calendarBuilder.isSameDay($0.dueDate, selectedDate) }
     }
 
     var ideas: [PlannerIdea] {
         dashboard?.ideas ?? []
     }
 
-    var calendarDays: [PlannerCalendarDay] {
-        makeCalendarDays()
+    var calendarWeeks: [[PlannerCalendarDay]] {
+        let weeks = calendarBuilder.makeWeeks(
+            visibleMonth: visibleMonth,
+            selectedDate: selectedDate,
+            cards: allCards
+        )
+
+        guard calendarDisplayMode == .week else {
+            return weeks
+        }
+
+        let selectedWeek = calendarBuilder.week(containing: selectedDate, in: weeks)
+        return selectedWeek.isEmpty ? weeks : [selectedWeek]
     }
 }
 
 private extension HomeViewModel {
-    func preferredSelectionDate(for month: Date) -> Date {
-        let preferredDay = dashboard?.markedDayNumbers.sorted().first ?? 1
-
-        var components = calendar.dateComponents([.year, .month], from: month)
-        components.day = preferredDay
-
-        return calendar.date(from: components) ?? month
+    var allCards: [PlannerContentCard] {
+        dashboard?.cards ?? []
     }
 
-    func makeCalendarDays() -> [PlannerCalendarDay] {
-        guard let dashboard,
-              let monthRange = calendar.range(of: .day, in: .month, for: visibleMonth),
-              let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: visibleMonth)) else {
-            return []
-        }
+    func shiftMonth(by value: Int) {
+        let shiftedMonth = calendarBuilder.shiftMonth(visibleMonth, by: value)
+        visibleMonth = shiftedMonth
 
-        let firstWeekday = calendar.component(.weekday, from: monthStart)
-        let leadingSlots = (firstWeekday - calendar.firstWeekday + 7) % 7
+        let matchedDate = calendarBuilder.matchingDay(in: shiftedMonth, preferredDayFrom: selectedDate)
+        selectedDate = matchedDate
+        retainedSelectedDate = matchedDate
+    }
 
-        var days = Array(
-            repeating: PlannerCalendarDay(
-                id: UUID().uuidString,
-                dayNumber: nil,
-                isSelected: false,
-                isMarked: false,
-                isWithinDisplayedMonth: false
-            ),
-            count: leadingSlots
-        )
+    func shiftWeek(by value: Int) {
+        let shiftedDate = calendarBuilder.shiftWeek(selectedDate, by: value)
+        applySelection(shiftedDate)
+    }
 
-        let selectedComponents = calendar.dateComponents([.year, .month, .day], from: selectedDate)
-        let visibleComponents = calendar.dateComponents([.year, .month], from: visibleMonth)
-
-        days += monthRange.map { day in
-            let isSelected = selectedComponents.year == visibleComponents.year &&
-                selectedComponents.month == visibleComponents.month &&
-                selectedComponents.day == day
-
-            return PlannerCalendarDay(
-                id: "day-\(day)",
-                dayNumber: day,
-                isSelected: isSelected,
-                isMarked: dashboard.markedDayNumbers.contains(day),
-                isWithinDisplayedMonth: true
-            )
-        }
-
-        let trailingSlots = (7 - (days.count % 7)) % 7
-        days += Array(
-            repeating: PlannerCalendarDay(
-                id: UUID().uuidString,
-                dayNumber: nil,
-                isSelected: false,
-                isMarked: false,
-                isWithinDisplayedMonth: false
-            ),
-            count: trailingSlots
-        )
-
-        return days
+    func applySelection(_ date: Date) {
+        let normalizedDate = calendarBuilder.normalizedDay(date)
+        selectedDate = normalizedDate
+        retainedSelectedDate = normalizedDate
+        visibleMonth = calendarBuilder.startOfMonth(for: normalizedDate)
     }
 }

@@ -38,30 +38,36 @@ nonisolated struct LivePlannerDashboardService: PlannerDashboardServiceProtocol 
             responseType: [PlannerDashboardCardResponse].self
         )
 
-        let cards = response.map { item in
-            PlannerContentCard(
+        let calendar = Calendar(identifier: .gregorian)
+        let referenceDashboard = PlannerDashboardMockData.dashboard
+        let referenceDate = referenceDashboard.selectedDate
+
+        let cards = response.enumerated().map { index, item in
+            let state = PlannerCardState(rawValue: item.accentStyle) ?? .planned
+            let scheduledDate = calendar.date(byAdding: .day, value: index, to: referenceDate) ?? referenceDate
+
+            return PlannerContentCard(
                 id: item.id,
                 title: item.title,
                 subtitle: item.subtitle,
-                state: PlannerCardState(rawValue: item.accentStyle) ?? .planned,
+                state: state,
                 platform: .instagram,
-                createdAt: .now,
-                postDate: nil,
+                createdAt: calendar.date(byAdding: .day, value: -1, to: scheduledDate) ?? scheduledDate,
+                postDate: state == .draft ? nil : scheduledDate,
                 imageAssetName: nil
             )
         }
 
         return PlannerDashboard(
             screenTitle: "Plan",
-            visibleMonth: PlannerDashboardMockData.dashboard.visibleMonth,
-            selectedDate: PlannerDashboardMockData.dashboard.selectedDate,
-            markedDayNumbers: PlannerDashboardMockData.dashboard.markedDayNumbers,
+            visibleMonth: referenceDashboard.visibleMonth,
+            selectedDate: referenceDashboard.selectedDate,
             cards: cards,
             todoItems: [
-                PlannerTodoItem(id: "remote-script", title: "Write the script outline", state: .today),
-                PlannerTodoItem(id: "remote-audio", title: "Confirm the audio direction", state: .default),
-                PlannerTodoItem(id: "remote-caption", title: "Finalize the caption", state: .overdue),
-                PlannerTodoItem(id: "remote-cover", title: "Export the cover image", state: .checked)
+                PlannerTodoItem(id: "remote-script", title: "Write the script outline", state: .today, dueDate: referenceDate),
+                PlannerTodoItem(id: "remote-audio", title: "Confirm the audio direction", state: .default, dueDate: referenceDate),
+                PlannerTodoItem(id: "remote-caption", title: "Finalize the caption", state: .overdue, dueDate: calendar.date(byAdding: .day, value: -1, to: referenceDate) ?? referenceDate),
+                PlannerTodoItem(id: "remote-cover", title: "Export the cover image", state: .checked, dueDate: calendar.date(byAdding: .day, value: 2, to: referenceDate) ?? referenceDate)
             ],
             ideas: [
                 PlannerIdea(id: "remote-series", title: "Creator routine series", note: "Turn a weekly workflow into a repeatable short-form story sequence.", tag: "Series")
