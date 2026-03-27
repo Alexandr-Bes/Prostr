@@ -29,42 +29,47 @@ struct TabsView: View {
     }
 
     var body: some View {
-        currentTabView
-            .safeAreaInset(edge: .bottom) {
-                PlannerTabBar(
-                    selection: appCore.selectedTab,
-                    onSelect: selectTab(_:)
-                )
+        TabView(selection: selectionBinding) {
+            Tab(
+                AppTab.calendar.title,
+                systemImage: AppTab.calendar.systemImage,
+                value: AppTab.calendar
+            ) {
+                NavigationStack {
+                    HomeView(viewModel: homeViewModel)
+                }
             }
-            .animation(.snappy(duration: 0.26), value: appCore.selectedTab)
+
+            Tab(
+                AppTab.todo.title,
+                systemImage: AppTab.todo.systemImage,
+                value: AppTab.todo
+            ) {
+                NavigationStack {
+                    TodoView(viewModel: todoViewModel)
+                }
+            }
+
+            Tab(
+                AppTab.ideas.title,
+                systemImage: AppTab.ideas.systemImage,
+                value: AppTab.ideas
+            ) {
+                NavigationStack {
+                    IdeasView(viewModel: ideasViewModel)
+                }
+            }
+        }
+        .tabBarMinimizeBehavior(.onScrollDown)
     }
 }
 
 private extension TabsView {
-    @ViewBuilder
-    var currentTabView: some View {
-        switch appCore.selectedTab {
-        case .calendar:
-            NavigationStack {
-                HomeView(viewModel: homeViewModel)
-            }
-
-        case .todo:
-            NavigationStack {
-                TodoView(viewModel: todoViewModel)
-            }
-
-        case .ideas:
-            NavigationStack {
-                IdeasView(viewModel: ideasViewModel)
-            }
-        }
-    }
-
-    func selectTab(_ tab: AppTab) {
-        withAnimation(.snappy(duration: 0.26)) {
-            appCore.selectedTab = tab
-        }
+    var selectionBinding: Binding<AppTab> {
+        Binding(
+            get: { appCore.selectedTab },
+            set: { appCore.selectedTab = $0 }
+        )
     }
 }
 

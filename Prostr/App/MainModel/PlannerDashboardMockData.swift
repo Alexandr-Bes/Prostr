@@ -32,7 +32,8 @@ enum PlannerDashboardMockData {
                     platform: .instagram,
                     createdAt: date(byAddingDays: -2, to: selectedDate, hour: 11, minute: 20),
                     postDate: date(byAddingDays: 0, to: selectedDate, hour: 12, minute: 0),
-                    imageAssetName: "colosseumRome"
+                    imageAssetName: "colosseumRome",
+                    tag: "travel"
                 ),
                 PlannerContentCard(
                     id: "linkedin-scheduled-today",
@@ -42,7 +43,8 @@ enum PlannerDashboardMockData {
                     platform: .linkedin,
                     createdAt: date(byAddingDays: -1, to: selectedDate, hour: 14, minute: 45),
                     postDate: date(byAddingDays: 0, to: selectedDate, hour: 18, minute: 30),
-                    imageAssetName: "sunsetRome"
+                    imageAssetName: "sunsetRome",
+                    tag: "brand story"
                 ),
                 PlannerContentCard(
                     id: "instagram-planned-upcoming",
@@ -52,7 +54,8 @@ enum PlannerDashboardMockData {
                     platform: .instagram,
                     createdAt: date(byAddingDays: 0, to: selectedDate, hour: 9, minute: 10),
                     postDate: date(byAddingDays: 2, to: selectedDate, hour: 10, minute: 0),
-                    imageAssetName: nil
+                    imageAssetName: nil,
+                    tag: "content"
                 ),
                 PlannerContentCard(
                     id: "tiktok-scheduled-upcoming",
@@ -62,18 +65,20 @@ enum PlannerDashboardMockData {
                     platform: .tiktok,
                     createdAt: date(byAddingDays: -3, to: selectedDate, hour: 18, minute: 5),
                     postDate: date(byAddingDays: 3, to: selectedDate, hour: 9, minute: 15),
-                    imageAssetName: "collonsRome"
-                ),
-                PlannerContentCard(
-                    id: "tiktok-draft",
-                    title: "Behind the scenes draft",
-                    subtitle: "A saved draft for a more casual creator-style check-in.",
-                    state: .draft,
-                    platform: .tiktok,
-                    createdAt: date(byAddingDays: -1, to: selectedDate, hour: 17, minute: 30),
-                    postDate: nil,
-                    imageAssetName: nil
-                )
+                    imageAssetName: "collonsRome",
+                    tag: "visuals"
+                )//,
+//                PlannerContentCard(
+//                    id: "tiktok-draft",
+//                    title: "Behind the scenes draft",
+//                    subtitle: "A saved draft for a more casual creator-style check-in.",
+//                    state: .draft,
+//                    platform: .tiktok,
+//                    createdAt: date(byAddingDays: -1, to: selectedDate, hour: 17, minute: 30),
+//                    postDate: nil,
+//                    imageAssetName: "sunsetRome",
+//                    tag: "draft"
+//                )
             ],
             todoItems: [
                 PlannerTodoItem(

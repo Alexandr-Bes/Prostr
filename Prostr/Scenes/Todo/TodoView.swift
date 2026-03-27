@@ -8,17 +8,15 @@
 import SwiftUI
 
 struct TodoView: View {
+    @Environment(\.appTheme) private var theme
+
     let viewModel: TodoViewModel
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
                 PlannerSurfaceCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        ForEach(viewModel.items) { item in
-                            PlannerTodoChip(item: item)
-                        }
-                    }
+                    content
                 }
             }
             .padding(20)
@@ -36,6 +34,36 @@ struct TodoView: View {
         }
         .task {
             await viewModel.loadIfNeeded()
+        }
+    }
+}
+
+private extension TodoView {
+    @ViewBuilder
+    var content: some View {
+        if viewModel.items.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("No to-do items yet")
+                    .font(.system(.headline, design: .rounded, weight: .bold))
+                    .foregroundStyle(theme.primaryText)
+
+                Text("Add items from the planner screen and they’ll show up here.")
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundStyle(theme.secondaryText)
+            }
+        } else {
+            VStack(alignment: .leading, spacing: 18) {
+                ForEach(viewModel.items) { item in
+                    PlannerTodoRowView(
+                        item: item,
+                        trailingText: AppDateFormatter.plannerLongDateString(from: item.dueDate)
+                    ) {
+                        Task {
+                            await viewModel.toggleTodoItem(id: item.id)
+                        }
+                    }
+                }
+            }
         }
     }
 }

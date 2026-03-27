@@ -22,10 +22,16 @@ struct HomeView: View {
             .padding(.top, 12)
             .padding(.bottom, 32)
         }
+        .scrollDismissesKeyboard(.interactively)
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                dismissKeyboard()
+            }
+        )
         .background(PlannerBackgroundView().ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(viewModel.screenTitle)
-        .navigationSubtitle(viewModel.selectedDateTitle)
+        .navigationTitle(viewModel.navigationTitle)
+        .navigationSubtitle(viewModel.navigationSubtitle)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -65,23 +71,39 @@ private extension HomeView {
             PlannerSegmentedControl(selection: displayModeBinding)
 
             if viewModel.displayMode == .calendar {
-                PlannerCalendarView(
-                    monthTitle: viewModel.monthTitle,
-                    weekdaySymbols: viewModel.weekdaySymbols,
-                    weeks: viewModel.calendarWeeks,
-                    displayMode: viewModel.calendarDisplayMode,
-                    onPreviousPeriod: { viewModel.shiftVisiblePeriod(by: -1) },
-                    onNextPeriod: { viewModel.shiftVisiblePeriod(by: 1) },
-                    onSelectDay: viewModel.selectDate(_:),
-                    onToggleDisplayMode: viewModel.toggleCalendarDisplayMode
-                )
+                calendarModeContent
             } else {
-                PlannerAgendaSectionView(cards: viewModel.cards)
+                listModeContent
             }
+        }
+    }
+
+    var calendarModeContent: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            PlannerCalendarView(
+                monthTitle: viewModel.monthTitle,
+                weekdaySymbols: viewModel.weekdaySymbols,
+                weeks: viewModel.calendarWeeks,
+                displayMode: viewModel.calendarDisplayMode,
+                onPreviousPeriod: { viewModel.shiftVisiblePeriod(by: -1) },
+                onNextPeriod: { viewModel.shiftVisiblePeriod(by: 1) },
+                onSelectDay: viewModel.selectDate(_:),
+                onToggleDisplayMode: viewModel.toggleCalendarDisplayMode
+            )
 
             PlannerTodoSectionView(
                 items: viewModel.todoItems,
-                onSeeAll: { appCore.selectedTab = .todo }
+                onSeeAll: { appCore.selectedTab = .todo },
+                onToggle: { item in
+                    Task {
+                        await viewModel.toggleTodoItem(id: item.id)
+                    }
+                },
+                onAdd: { title in
+                    Task {
+                        await viewModel.addTodoItem(title: title)
+                    }
+                }
             )
 
             VStack(alignment: .leading, spacing: 16) {
@@ -89,14 +111,6 @@ private extension HomeView {
                     Text("Scheduled content")
                         .font(.system(.title3, design: .rounded, weight: .bold))
                         .foregroundStyle(theme.primaryText)
-
-//                    Spacer()
-//
-//                    Button("Ideas") {
-//                        appCore.selectedTab = .ideas
-//                    }
-//                    .font(.system(.subheadline, design: .rounded, weight: .semibold))
-//                    .foregroundStyle(theme.accentTint)
                 }
 
                 ForEach(viewModel.cards) { card in
@@ -106,10 +120,24 @@ private extension HomeView {
         }
     }
 
+    var listModeContent: some View {
+        PlannerCardListView(
+            selectedFilter: listFilterBinding,
+            sections: viewModel.listSections
+        )
+    }
+
     var displayModeBinding: Binding<PlannerHomeMode> {
         Binding(
             get: { viewModel.displayMode },
             set: { viewModel.displayMode = $0 }
+        )
+    }
+
+    var listFilterBinding: Binding<PlannerCardFilter> {
+        Binding(
+            get: { viewModel.selectedCardFilter },
+            set: { viewModel.selectCardFilter($0) }
         )
     }
 

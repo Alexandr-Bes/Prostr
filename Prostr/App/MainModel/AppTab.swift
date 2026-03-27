@@ -17,7 +17,7 @@ enum AppTab: String, CaseIterable, Hashable, Identifiable {
     var title: String {
         switch self {
         case .calendar:
-            return "Calendar"
+            return "Planner"
         case .todo:
             return "To-do"
         case .ideas:

@@ -54,7 +54,8 @@ nonisolated struct LivePlannerDashboardService: PlannerDashboardServiceProtocol 
                 platform: .instagram,
                 createdAt: calendar.date(byAdding: .day, value: -1, to: scheduledDate) ?? scheduledDate,
                 postDate: state == .draft ? nil : scheduledDate,
-                imageAssetName: nil
+                imageAssetName: nil,
+                tag: nil
             )
         }
 

@@ -25,6 +25,7 @@ struct PlannerContentCard: Identifiable, Hashable {
     let createdAt: Date
     let postDate: Date?
     let imageAssetName: String?
+    let tag: String?
 
     var effectiveDisplayDate: Date {
         postDate ?? createdAt
@@ -78,6 +79,17 @@ enum PlannerPlatform: String, Hashable {
             return "TT"
         }
     }
+
+    var avatarAssetName: String? {
+        switch self {
+        case .instagram:
+            return "avatarInsta"
+        case .linkedin:
+            return "avatarLinkedin"
+        case .tiktok:
+            return "avatarTikTok"
+        }
+    }
 }
 
 struct PlannerTodoItem: Identifiable, Hashable {
@@ -85,6 +97,10 @@ struct PlannerTodoItem: Identifiable, Hashable {
     let title: String
     let state: PlannerTodoState
     let dueDate: Date
+
+    var isCompleted: Bool {
+        state == .checked
+    }
 }
 
 enum PlannerTodoState: Hashable {
@@ -104,6 +120,73 @@ enum PlannerTodoState: Hashable {
         case .overdue:
             return "Overdue"
         }
+    }
+}
+
+extension PlannerDashboard {
+    func updating(todoItems: [PlannerTodoItem]) -> PlannerDashboard {
+        PlannerDashboard(
+            screenTitle: screenTitle,
+            visibleMonth: visibleMonth,
+            selectedDate: selectedDate,
+            cards: cards,
+            todoItems: todoItems,
+            ideas: ideas
+        )
+    }
+}
+
+extension PlannerTodoItem {
+    func toggled(relativeTo referenceDate: Date, calendar: Calendar) -> PlannerTodoItem {
+        PlannerTodoItem(
+            id: id,
+            title: title,
+            state: PlannerTodoState.toggledState(
+                current: state,
+                dueDate: dueDate,
+                referenceDate: referenceDate,
+                calendar: calendar
+            ),
+            dueDate: dueDate
+        )
+    }
+}
+
+extension PlannerTodoState {
+    static func state(
+        for dueDate: Date,
+        referenceDate: Date,
+        calendar: Calendar
+    ) -> PlannerTodoState {
+        let normalizedReferenceDate = calendar.startOfDay(for: referenceDate)
+        let normalizedDueDate = calendar.startOfDay(for: dueDate)
+
+        if calendar.isDate(normalizedDueDate, inSameDayAs: normalizedReferenceDate) {
+            return .today
+        }
+
+        if normalizedDueDate < normalizedReferenceDate {
+            return .overdue
+        }
+
+        return .default
+    }
+
+    static func toggledState(
+        current: PlannerTodoState,
+        dueDate: Date,
+        referenceDate: Date,
+        calendar: Calendar
+    ) -> PlannerTodoState {
+        guard current == .checked else {
+            return .checked
+        }
+
+        return state(
+            for: dueDate,
+            referenceDate: referenceDate,
+            calendar: calendar
+        )
     }
 }
 

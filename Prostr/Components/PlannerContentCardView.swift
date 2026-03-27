@@ -2,7 +2,7 @@
 //  PlannerContentCardView.swift
 //  Prostr
 //
-//  Created by AlexBezkopylnyi on 20.03.2026.
+//  Created by AlexBezkopylnyi on 22.03.2026.
 //
 
 import SwiftUI
@@ -10,265 +10,300 @@ import SwiftUI
 struct PlannerContentCardView: View {
     let card: PlannerContentCard
 
+    private let cardHeight: CGFloat = 228
+    private let cornerRadius: CGFloat = 16
+    private let mediaWidthRatio: CGFloat = 0.27
+    private let minimumMediaWidth: CGFloat = 92
+
     var body: some View {
-        HStack(alignment: .top, spacing: 18) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 8) {
-                    statusBadge
+        GeometryReader { geometry in
+            let mediaWidth = max(geometry.size.width * mediaWidthRatio, minimumMediaWidth)
 
-                    Spacer(minLength: 8)
+            HStack(spacing: 0) {
+                content
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 18)
 
-                    Text(AppDateFormatter.plannerCardDateString(from: card.effectiveDisplayDate))
-                        .font(.system(.caption2, design: .rounded, weight: .bold))
-                        .foregroundStyle(palette.primaryText)
-                }
-
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(card.title)
-                        .font(.system(.title3, design: .rounded, weight: .bold))
-                        .foregroundStyle(palette.primaryText)
-
-                    Text(card.subtitle)
-                        .font(.system(.subheadline, design: .rounded))
-                        .foregroundStyle(palette.secondaryText)
-                }
-
-                Spacer(minLength: 12)
-
-                platformBadge
-                footerBadge
+                mediaSection
+                    .frame(width: mediaWidth)
+                    .frame(maxHeight: .infinity)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            preview
+            .background(backgroundGradient)
+            .clipShape(cardShape)
+            .overlay {
+                cardShape
+                    .strokeBorder(palette.borderColor, lineWidth: 1)
+            }
+            .shadow(color: palette.shadowColor, radius: 20, x: 0, y: 12)
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, minHeight: 212, alignment: .leading)
-        .background(backgroundGradient, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(palette.border, lineWidth: 1)
-        )
-        .shadow(color: palette.shadow, radius: 16, y: 10)
+        .frame(height: cardHeight)
     }
 }
 
 private extension PlannerContentCardView {
-    var backgroundGradient: LinearGradient {
+    var content: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            headerRow
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text(card.title)
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundStyle(palette.primaryTextColor)
+                    .lineLimit(1)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text(card.subtitle)
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(palette.secondaryTextColor)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .layoutPriority(1)
+
+            Spacer(minLength: 12)
+
+            footerRow
+        }
+    }
+
+    var headerRow: some View {
+        HStack(alignment: .center, spacing: 12) {
+            statusBadge
+
+            Spacer(minLength: 8)
+
+            statusDateLabel
+        }
+    }
+
+    var footerRow: some View {
+        HStack(alignment: .bottom, spacing: 12) {
+            if let avatarAssetName = card.platform.avatarAssetName {
+                Image(avatarAssetName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 30)
+                    .accessibilityHidden(true)
+            }
+
+            Spacer(minLength: 0)
+
+            if let tag = normalizedTag {
+                Text(tag)
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(palette.tagTextColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(palette.tagBackgroundColor, in: Capsule())
+                    .lineLimit(1)
+            }
+        }
+    }
+
+    var statusBadge: some View {
+        HStack(spacing: 4) {
+            Image(card.state.iconAssetName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16, height: 16)
+                .accessibilityHidden(true)
+
+            Text(card.state.title)
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .lineLimit(1)
+        }
+        .foregroundStyle(palette.statusTextColor)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(palette.statusBackgroundColor, in: Capsule())
+    }
+
+    @ViewBuilder
+    var statusDateLabel: some View {
+        switch card.state {
+        case .draft:
+            EmptyView()
+
+        case .planned:
+            Text(AppDateFormatter.plannerCardDateString(from: card.effectiveDisplayDate))
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(palette.metaTextColor)
+                .lineLimit(1)
+
+        case .scheduled:
+            HStack(spacing: 6) {
+                Image("scheduledDateIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 16, height: 16)
+                    .accessibilityHidden(true)
+
+                Text(AppDateFormatter.plannerCardDateString(from: card.effectiveDisplayDate))
+                    .lineLimit(1)
+            }
+            .font(.system(size: 12, weight: .medium, design: .rounded))
+            .foregroundStyle(palette.metaTextColor)
+        }
+    }
+
+    var mediaSection: some View {
+        Group {
+            if let imageAssetName = card.imageAssetName {
+                Image(imageAssetName)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                placeholderMedia
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
+        .accessibilityHidden(true)
+    }
+
+    var placeholderMedia: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    palette.placeholderTopColor,
+                    palette.placeholderBottomColor
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color.white.opacity(0.44))
+                    .frame(width: 52, height: 80)
+                    .offset(x: -12, y: -8)
+
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color.white.opacity(0.66))
+                    .frame(width: 58, height: 88)
+                    .offset(x: -2, y: 4)
+
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color.white.opacity(0.88))
+                    .frame(width: 64, height: 96)
+                    .overlay {
+                        Image(systemName: "photo")
+                            .font(.system(size: 22, weight: .medium))
+                            .foregroundStyle(palette.metaTextColor.opacity(0.65))
+                    }
+                    .offset(x: 8, y: 14)
+            }
+        }
+    }
+
+    var backgroundGradient: some ShapeStyle {
         LinearGradient(
-            colors: [palette.backgroundTop, palette.backgroundBottom],
+            colors: [palette.gradientStartColor, palette.gradientEndColor],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
     }
 
-    var statusBadge: some View {
-        Label {
-            Text(card.state.title)
-                .font(.system(.caption2, design: .rounded, weight: .bold))
-                .foregroundStyle(palette.accent)
-                .lineLimit(1)
-        } icon: {
-            Image(systemName: statusSymbolName)
-                .font(.system(size: 10, weight: .bold))
-                .foregroundStyle(palette.accent)
+    var normalizedTag: String? {
+        guard let tag = card.tag?.trimmingCharacters(in: .whitespacesAndNewlines), !tag.isEmpty else {
+            return nil
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(palette.chipBackground, in: Capsule())
+
+        return tag
     }
 
-    var platformBadge: some View {
-        HStack(spacing: 6) {
-            Circle()
-                .fill(palette.accent)
-                .frame(width: 7, height: 7)
-
-            Text(card.platform.shortTitle)
-                .font(.system(.caption, design: .rounded, weight: .bold))
-        }
-        .foregroundStyle(palette.primaryText)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(palette.softSurface, in: Capsule())
+    var cardShape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
     }
 
-    var footerBadge: some View {
-        HStack(spacing: 8) {
-            Image(systemName: card.imageAssetName == nil ? "square.stack.3d.up" : "photo")
-                .font(.system(size: 11, weight: .bold))
-
-            Text(card.imageAssetName == nil ? "Media pending" : "Image attached")
-                .font(.system(.caption, design: .rounded, weight: .semibold))
-        }
-        .foregroundStyle(palette.secondaryText)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
-        .background(palette.softSurface.opacity(0.92), in: Capsule())
-    }
-
-    var statusSymbolName: String {
+    var palette: PlannerContentCardPalette {
         switch card.state {
         case .draft:
-            return "pencil"
+            return .draft
         case .planned:
-            return "calendar"
+            return .planned
         case .scheduled:
-            return "clock"
-        }
-    }
-
-    @ViewBuilder
-    var preview: some View {
-        if let imageAssetName = card.imageAssetName {
-            imagePreview(imageAssetName)
-        } else {
-            placeholderPreview
-        }
-    }
-
-    func imagePreview(_ imageAssetName: String) -> some View {
-        ZStack(alignment: .bottomTrailing) {
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(palette.accent.opacity(0.14))
-                .frame(width: 116, height: 160)
-                .offset(x: -10, y: 8)
-
-            Image(imageAssetName)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 116, height: 160)
-                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(Color.white.opacity(0.30), lineWidth: 1)
-                )
-                .overlay(
-                    LinearGradient(
-                        colors: [.clear, .black.opacity(0.14)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                )
-
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(palette.softSurface)
-                .frame(width: 38, height: 38)
-                .overlay(
-                    Image(systemName: "photo.stack")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(palette.accent)
-                )
-                .offset(x: 8, y: 8)
-        }
-        .frame(width: 126, height: 172)
-    }
-
-    var placeholderPreview: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(palette.softSurface.opacity(0.52))
-                .frame(width: 116, height: 160)
-                .offset(x: -10, y: 8)
-
-            layeredPreview
-        }
-        .frame(width: 126, height: 172)
-    }
-
-    var layeredPreview: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.white.opacity(0.44))
-                .frame(width: 92, height: 130)
-                .rotationEffect(.degrees(-14))
-                .offset(x: -10, y: 8)
-
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.white.opacity(0.58))
-                .frame(width: 92, height: 130)
-                .rotationEffect(.degrees(-4))
-                .offset(x: 4, y: 2)
-
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.white.opacity(0.94))
-                .frame(width: 92, height: 130)
-                .overlay(
-                    VStack(alignment: .leading, spacing: 8) {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(palette.accent)
-                            .frame(height: 14)
-
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.white.opacity(0.72))
-                            .frame(height: 10)
-
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.white.opacity(0.72))
-                            .frame(height: 10)
-
-                        Spacer(minLength: 0)
-
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(palette.chipBackground)
-                            .frame(width: 44, height: 24)
-                    }
-                    .padding(12)
-                )
-        }
-    }
-
-    var palette: CardPalette {
-        switch card.state {
-        case .planned:
-            return CardPalette(
-                backgroundTop: Color(hex: "C9EFF1"),
-                backgroundBottom: Color(hex: "F3FEFF"),
-                accent: Color(hex: "4B8F90"),
-                chipBackground: Color.white.opacity(0.72),
-                primaryText: Color(hex: "1A2525"),
-                secondaryText: Color(hex: "536564"),
-                border: Color.black.opacity(0.05),
-                shadow: Color.black.opacity(0.08)
-            )
-        case .scheduled:
-            return CardPalette(
-                backgroundTop: Color(hex: "D4EDFF"),
-                backgroundBottom: Color(hex: "F1F9FF"),
-                accent: Color(hex: "4C87B1"),
-                chipBackground: Color.white.opacity(0.72),
-                primaryText: Color(hex: "1C242D"),
-                secondaryText: Color(hex: "566370"),
-                border: Color.black.opacity(0.05),
-                shadow: Color.black.opacity(0.08)
-            )
-        case .draft:
-            return CardPalette(
-                backgroundTop: Color(hex: "FBFBFE"),
-                backgroundBottom: Color(hex: "EDEFFF"),
-                accent: Color(hex: "7A82C6"),
-                chipBackground: Color.white.opacity(0.72),
-                primaryText: Color(hex: "232536"),
-                secondaryText: Color(hex: "61657C"),
-                border: Color.black.opacity(0.05),
-                shadow: Color.black.opacity(0.08)
-            )
+            return .scheduled
         }
     }
 }
 
-private struct CardPalette {
-    let backgroundTop: Color
-    let backgroundBottom: Color
-    let accent: Color
-    let chipBackground: Color
-    let primaryText: Color
-    let secondaryText: Color
-    let border: Color
-    let shadow: Color
+private struct PlannerContentCardPalette {
+    let gradientStartColor: Color
+    let gradientEndColor: Color
+    let statusBackgroundColor: Color
+    let statusTextColor: Color
+    let primaryTextColor: Color
+    let secondaryTextColor: Color
+    let metaTextColor: Color
+    let tagBackgroundColor: Color
+    let tagTextColor: Color
+    let placeholderTopColor: Color
+    let placeholderBottomColor: Color
+    let borderColor: Color
+    let shadowColor: Color
 
-    var softSurface: Color {
-        chipBackground
+    static let draft = PlannerContentCardPalette(
+        gradientStartColor: Color(hex: "FBFBFE"),
+        gradientEndColor: Color(hex: "EDEFFF"),
+        statusBackgroundColor: Color(hex: "A9B0D9"),
+        statusTextColor: .white,
+        primaryTextColor: Color(hex: "1F1C1B"),
+        secondaryTextColor: Color(hex: "4F4B54"),
+        metaTextColor: Color(hex: "6B7290"),
+        tagBackgroundColor: Color(hex: "DEE3FF"),
+        tagTextColor: Color(hex: "48537A"),
+        placeholderTopColor: Color(hex: "F0F2FF"),
+        placeholderBottomColor: Color(hex: "DCE0FF"),
+        borderColor: Color.white.opacity(0.75),
+        shadowColor: Color(hex: "20213D", opacity: 0.10)
+    )
+
+    static let scheduled = PlannerContentCardPalette(
+        gradientStartColor: Color(hex: "D4EDFF"),
+        gradientEndColor: Color(hex: "F1F9FF"),
+        statusBackgroundColor: Color(hex: "5D98C2"),
+        statusTextColor: .white,
+        primaryTextColor: Color(hex: "1F1C1B"),
+        secondaryTextColor: Color(hex: "48515B"),
+        metaTextColor: Color(hex: "557B99"),
+        tagBackgroundColor: Color(hex: "D6EEF9"),
+        tagTextColor: Color(hex: "315A71"),
+        placeholderTopColor: Color(hex: "E5F5FF"),
+        placeholderBottomColor: Color(hex: "C9E9FF"),
+        borderColor: Color.white.opacity(0.72),
+        shadowColor: Color(hex: "1F5E84", opacity: 0.10)
+    )
+
+    static let planned = PlannerContentCardPalette(
+        gradientStartColor: Color(hex: "C9EFF1"),
+        gradientEndColor: Color(hex: "F3FEFF"),
+        statusBackgroundColor: Color(hex: "6A9B97"),
+        statusTextColor: .white,
+        primaryTextColor: Color(hex: "1F1C1B"),
+        secondaryTextColor: Color(hex: "475453"),
+        metaTextColor: Color(hex: "568988"),
+        tagBackgroundColor: Color(hex: "C9F0C9"),
+        tagTextColor: Color(hex: "2E6C49"),
+        placeholderTopColor: Color(hex: "DDF8F8"),
+        placeholderBottomColor: Color(hex: "C5ECEF"),
+        borderColor: Color.white.opacity(0.72),
+        shadowColor: Color(hex: "286467", opacity: 0.10)
+    )
+}
+
+private extension PlannerCardState {
+    var iconAssetName: String {
+        switch self {
+        case .draft:
+            return "draftIcon"
+        case .planned:
+            return "plannedIcon"
+        case .scheduled:
+            return "scheduledIcon"
+        }
     }
 }
