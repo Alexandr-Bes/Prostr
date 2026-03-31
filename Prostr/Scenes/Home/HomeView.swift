@@ -11,6 +11,8 @@ struct HomeView: View {
     @Environment(AppCore.self) private var appCore
     @Environment(\.appTheme) private var theme
 
+    @State private var activeEditorViewModel: EditPostViewModel?
+
     let viewModel: HomeViewModel
 
     var body: some View {
@@ -33,7 +35,15 @@ struct HomeView: View {
         .navigationTitle(viewModel.navigationTitle)
         .navigationSubtitle(viewModel.navigationSubtitle)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button {
+                    openNewPost()
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(theme.primaryText)
+                }
+
                 Button {
                 } label: {
                     Image(systemName: "line.3.horizontal.decrease")
@@ -50,6 +60,9 @@ struct HomeView: View {
 
             viewModel.applyDeepLink(date: date)
             appCore.consumePendingCalendarDateSelection()
+        }
+        .sheet(item: $activeEditorViewModel) { editorViewModel in
+            EditPostView(viewModel: editorViewModel)
         }
     }
 }
@@ -114,7 +127,7 @@ private extension HomeView {
                 }
 
                 ForEach(viewModel.cards) { card in
-                    PlannerContentCardView(card: card)
+                    cardButton(for: card)
                 }
             }
         }
@@ -123,8 +136,18 @@ private extension HomeView {
     var listModeContent: some View {
         PlannerCardListView(
             selectedFilter: listFilterBinding,
-            sections: viewModel.listSections
+            sections: viewModel.listSections,
+            onSelectCard: openCard(_:)
         )
+    }
+
+    func cardButton(for card: PlannerContentCard) -> some View {
+        Button {
+            openCard(card)
+        } label: {
+            PlannerContentCardView(card: card)
+        }
+        .buttonStyle(.plain)
     }
 
     var displayModeBinding: Binding<PlannerHomeMode> {
@@ -183,6 +206,20 @@ private extension HomeView {
                 .background(theme.tabBarActiveBackground, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
         }
+    }
+
+    func openCard(_ card: PlannerContentCard) {
+        activeEditorViewModel = EditPostViewModel(
+            card: card,
+            plannerDashboardRepository: appCore.repositories.plannerDashboardRepository
+        )
+    }
+
+    func openNewPost() {
+        activeEditorViewModel = EditPostViewModel(
+            newPostFor: viewModel.selectedDate,
+            plannerDashboardRepository: appCore.repositories.plannerDashboardRepository
+        )
     }
 }
 

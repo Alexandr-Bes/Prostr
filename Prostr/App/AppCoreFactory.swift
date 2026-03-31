@@ -39,6 +39,7 @@ enum AppCoreFactory {
         let themeService = ThemeService(localStorage: localStorage)
         let deepLinkService = AppDeepLinkService()
         let deepLinkStore = SwiftDataDeepLinkHistoryStore(swiftData: swiftDataService)
+        let plannerContentCardStore = SwiftDataPlannerContentCardStore(swiftData: swiftDataService)
         let plannerDashboardService = makePlannerDashboardService(for: dataMode)
 
         let services = AppServices(
@@ -48,7 +49,10 @@ enum AppCoreFactory {
         )
 
         let repositories = AppRepositories(
-            plannerDashboardRepository: PlannerDashboardRepository(service: plannerDashboardService),
+            plannerDashboardRepository: PlannerDashboardRepository(
+                service: plannerDashboardService,
+                contentCardStore: plannerContentCardStore
+            ),
             deepLinkHistoryRepository: DeepLinkHistoryRepository(store: deepLinkStore)
         )
 
