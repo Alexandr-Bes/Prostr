@@ -1,13 +1,11 @@
 //
 //  HTTPMethod.swift
-//  Prostr
-//
-//  Created by AlexBezkopylnyi on 20.03.2026.
+//  Networking
 //
 
 import Foundation
 
-enum HTTPMethod: String {
+public enum HTTPMethod: String, Sendable {
     case get = "GET"
     case post = "POST"
     case put = "PUT"

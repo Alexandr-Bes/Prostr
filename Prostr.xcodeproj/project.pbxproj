@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4E7000000000000000000004 /* Networking in Frameworks */ = {isa = PBXBuildFile; productRef = 4E7000000000000000000002 /* Networking */; };
+		4E7000000000000000000005 /* NetworkingTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4E7000000000000000000003 /* NetworkingTesting */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		1CE144BC2F6DBF380020F244 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4E7000000000000000000004 /* Networking in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4E7000000000000000000005 /* NetworkingTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +119,7 @@
 			);
 			name = Prostr;
 			packageProductDependencies = (
+				4E7000000000000000000002 /* Networking */,
 			);
 			productName = Prostr;
 			productReference = 1CE144AE2F6DBF360020F244 /* Prostr.app */;
@@ -135,6 +143,7 @@
 			);
 			name = ProstrTests;
 			packageProductDependencies = (
+				4E7000000000000000000003 /* NetworkingTesting */,
 			);
 			productName = ProstrTests;
 			productReference = 1CE144BB2F6DBF380020F244 /* ProstrTests.xctest */;
@@ -195,6 +204,9 @@
 			);
 			mainGroup = 1CE144A52F6DBF360020F244;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4E7000000000000000000001 /* XCLocalSwiftPackageReference "Packages/Networking" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1CE144AF2F6DBF360020F244 /* Products */;
 			projectDirPath = "";
@@ -582,6 +594,24 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		4E7000000000000000000001 /* XCLocalSwiftPackageReference "Packages/Networking" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Networking;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4E7000000000000000000002 /* Networking */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Networking;
+		};
+		4E7000000000000000000003 /* NetworkingTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = NetworkingTesting;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1CE144A62F6DBF360020F244 /* Project object */;
 }
