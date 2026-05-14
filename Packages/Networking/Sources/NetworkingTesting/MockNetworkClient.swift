@@ -36,8 +36,14 @@ public extension MockNetworkClient {
         encoder: JSONEncoder = JSONEncoder(),
         decoder: JSONDecoder = JSONDecoder()
     ) -> MockNetworkClient {
-        MockNetworkClient(decoder: decoder) { _ in
-            try encoder.encode(value)
+        do {
+            let data = try encoder.encode(value)
+            return MockNetworkClient(decoder: decoder) { _ in data }
+        } catch {
+            let errorDescription = error.localizedDescription
+            return MockNetworkClient(decoder: decoder) { _ in
+                throw MockNetworkClientEncodingError(description: errorDescription)
+            }
         }
     }
 
@@ -66,6 +72,14 @@ public extension MockNetworkClient {
             }
             throw MockNetworkClientError.unhandledEndpoint(path: endpoint.path)
         }
+    }
+}
+
+private struct MockNetworkClientEncodingError: LocalizedError, Sendable {
+    let description: String
+
+    var errorDescription: String? {
+        "MockNetworkClient could not encode the provided response value: \(description)"
     }
 }
 
