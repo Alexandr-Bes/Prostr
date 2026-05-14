@@ -1,22 +1,29 @@
 //
-//  NetworkClient.swift
-//  Prostr
-//
-//  Created by AlexBezkopylnyi on 20.03.2026.
+//  URLSessionNetworkClient.swift
+//  Networking
 //
 
 import Foundation
 
-protocol NetworkClient {
-    nonisolated func send<Response: Decodable>(_ endpoint: APIEndpoint, responseType: Response.Type) async throws -> Response
-}
+public struct URLSessionNetworkClient: NetworkClient, @unchecked Sendable {
+    public let baseURL: URL
+    public var session: URLSession
+    public var decoder: JSONDecoder
 
-nonisolated struct URLSessionNetworkClient: NetworkClient {
-    let baseURL: URL
-    var session: URLSession = .shared
-    var decoder: JSONDecoder = .init()
+    public init(
+        baseURL: URL,
+        session: URLSession = .shared,
+        decoder: JSONDecoder = JSONDecoder()
+    ) {
+        self.baseURL = baseURL
+        self.session = session
+        self.decoder = decoder
+    }
 
-    nonisolated func send<Response: Decodable>(_ endpoint: APIEndpoint, responseType: Response.Type) async throws -> Response {
+    public func send<Response: Decodable>(
+        _ endpoint: any APIEndpoint,
+        responseType: Response.Type
+    ) async throws -> Response {
         let request = try makeRequest(for: endpoint)
 
         do {
@@ -43,7 +50,7 @@ nonisolated struct URLSessionNetworkClient: NetworkClient {
 }
 
 private extension URLSessionNetworkClient {
-    nonisolated func makeRequest(for endpoint: APIEndpoint) throws -> URLRequest {
+    func makeRequest(for endpoint: any APIEndpoint) throws -> URLRequest {
         let trimmedPath = endpoint.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         let endpointURL = trimmedPath.isEmpty ? baseURL : baseURL.appendingPathComponent(trimmedPath)
 
@@ -63,7 +70,7 @@ private extension URLSessionNetworkClient {
         request.httpMethod = endpoint.method.rawValue
         request.httpBody = endpoint.body
 
-        endpoint.headers.forEach { key, value in
+        for (key, value) in endpoint.headers {
             request.setValue(value, forHTTPHeaderField: key)
         }
 

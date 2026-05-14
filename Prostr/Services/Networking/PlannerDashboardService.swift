@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Networking
 
 protocol PlannerDashboardServiceProtocol {
     nonisolated func fetchDashboard() async throws -> PlannerDashboard
