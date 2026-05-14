@@ -11,4 +11,5 @@ struct AppServices {
     let swiftDataService: any SwiftDataServiceProtocol
     let themeService: any ThemeServiceProtocol
     let deepLinkService: any DeepLinkServiceProtocol
+    let authService: any AuthServiceProtocol
 }

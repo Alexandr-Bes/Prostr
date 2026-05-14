@@ -138,9 +138,18 @@ enum PlannerDashboardMockData {
                 )
             ],
             ideas: [
-                PlannerIdea(id: "idea-1", title: "Weekly creator check-in", note: "A recurring diary-style update that works as both a reel and a TikTok.", tag: "Routine"),
-                PlannerIdea(id: "idea-2", title: "Client feedback breakdown", note: "Turn one client note into a concise LinkedIn story and visual carousel.", tag: "LinkedIn"),
-                PlannerIdea(id: "idea-3", title: "Editing workflow shortcuts", note: "A quick swipe list of favorite shortcuts, presets, and save-time tricks.", tag: "Tips")
+                PlannerIdea(
+                    id: "idea-1",
+                    title: "Funny video",
+                    note: "Sunset over Roman rooftops, pasta for dinner, and cobblestone walks that never end.",
+                    tag: "Idea"
+                ),
+                PlannerIdea(
+                    id: "idea-2",
+                    title: "Interesting facts",
+                    note: "Rome has a way of making every moment timeless",
+                    tag: "Idea"
+                )
             ]
         )
     }
