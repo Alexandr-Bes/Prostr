@@ -18,9 +18,11 @@ final class AppCore {
     private(set) var selectedThemeMode: ThemeMode = .system
     private(set) var lastHandledRoute: DeepLinkRoute?
     private(set) var pendingCalendarDateSelection: Date?
+    private(set) var authSession: AuthSession?
 
     var selectedTab: AppTab = .calendar
     var homePath: [String] = []
+    var authDestination: AuthDestination = .signUp
 
     init(services: AppServices, repositories: AppRepositories) {
         self.services = services
@@ -39,12 +41,27 @@ final class AppCore {
         guard !isBootstrapped else { return }
 
         selectedThemeMode = services.themeService.loadThemeMode()
+        authSession = services.authService.loadSession()
         isBootstrapped = true
     }
 
     func updateThemeMode(_ mode: ThemeMode) {
         selectedThemeMode = mode
         services.themeService.saveThemeMode(mode)
+    }
+
+    func showAuthDestination(_ destination: AuthDestination) {
+        authDestination = destination
+    }
+
+    func finishAuthentication(with session: AuthSession) {
+        authSession = session
+    }
+
+    func signOut() {
+        services.authService.signOut()
+        authSession = nil
+        authDestination = .signIn
     }
 
     func handleIncomingURL(_ url: URL) {

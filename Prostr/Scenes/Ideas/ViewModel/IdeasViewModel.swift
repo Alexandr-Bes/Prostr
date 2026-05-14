@@ -14,7 +14,8 @@ final class IdeasViewModel {
     private let plannerDashboardRepository: any PlannerDashboardRepositoryProtocol
     private var hasLoaded = false
 
-    private(set) var ideas: [PlannerIdea] = []
+    private(set) var ideaCards: [IdeaCardItem] = []
+    private var nextIdeaNumber = 1
 
     init(plannerDashboardRepository: any PlannerDashboardRepositoryProtocol) {
         self.plannerDashboardRepository = plannerDashboardRepository
@@ -22,7 +23,8 @@ final class IdeasViewModel {
 
     init(previewDashboard: PlannerDashboard) {
         self.plannerDashboardRepository = PlannerDashboardRepository(service: MockPlannerDashboardService())
-        self.ideas = previewDashboard.ideas
+        self.ideaCards = Self.makeIdeaCards(from: previewDashboard.ideas)
+        self.nextIdeaNumber = self.ideaCards.count + 1
         self.hasLoaded = true
     }
 
@@ -30,10 +32,37 @@ final class IdeasViewModel {
         guard !hasLoaded else { return }
 
         do {
-            ideas = try await plannerDashboardRepository.fetchDashboard().ideas
+            let ideas = try await plannerDashboardRepository.fetchDashboard().ideas
+            ideaCards = Self.makeIdeaCards(from: ideas)
+            nextIdeaNumber = ideaCards.count + 1
             hasLoaded = true
         } catch {
             Log.error(error)
+        }
+    }
+
+    func makeComposerViewModel() -> IdeaComposerViewModel {
+        IdeaComposerViewModel(
+            badgeTitle: "Idea #\(nextIdeaNumber)",
+            palette: IdeaCardPalette.palette(for: nextIdeaNumber - 1)
+        )
+    }
+
+    func addIdea(from draft: IdeaComposerDraft) {
+        ideaCards.append(IdeaCardItem(draft: draft))
+        nextIdeaNumber += 1
+    }
+}
+
+private extension IdeasViewModel {
+    static func makeIdeaCards(from ideas: [PlannerIdea]) -> [IdeaCardItem] {
+        ideas.enumerated().map { index, idea in
+            IdeaCardItem(
+                idea: idea,
+                badgeTitle: "Idea #\(index + 1)",
+                palette: IdeaCardPalette.palette(for: index),
+                platform: index == 1 ? .instagram : nil
+            )
         }
     }
 }

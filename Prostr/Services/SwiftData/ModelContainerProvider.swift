@@ -15,11 +15,18 @@ final class ModelContainerProvider {
     let container: ModelContainer
 
     init(isStoredInMemoryOnly: Bool = false) {
-        let schema = Schema([SwiftDataDeepLinkRecord.self])
+        let schema = Schema([
+            SwiftDataDeepLinkRecord.self,
+            SwiftDataPlannerContentCardRecord.self
+        ])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: isStoredInMemoryOnly)
 
         do {
-            container = try ModelContainer(for: SwiftDataDeepLinkRecord.self, configurations: configuration)
+            container = try ModelContainer(
+                for: SwiftDataDeepLinkRecord.self,
+                SwiftDataPlannerContentCardRecord.self,
+                configurations: configuration
+            )
         } catch {
             Log.error(error)
             fatalError("Unable to initialize SwiftData container")

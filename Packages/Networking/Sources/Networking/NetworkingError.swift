@@ -1,20 +1,18 @@
 //
 //  NetworkingError.swift
-//  Prostr
-//
-//  Created by AlexBezkopylnyi on 20.03.2026.
+//  Networking
 //
 
 import Foundation
 
-enum NetworkingError: LocalizedError {
+public enum NetworkingError: LocalizedError {
     case invalidURL
     case invalidResponse
     case invalidStatusCode(Int)
     case decoding(Error)
     case transport(Error)
 
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .invalidURL:
             return "The request URL could not be constructed."

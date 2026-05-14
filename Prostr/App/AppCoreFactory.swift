@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Networking
 
 @MainActor
 enum AppCoreFactory {
@@ -38,17 +39,23 @@ enum AppCoreFactory {
         )
         let themeService = ThemeService(localStorage: localStorage)
         let deepLinkService = AppDeepLinkService()
+        let authService = AuthService(localStorage: localStorage)
         let deepLinkStore = SwiftDataDeepLinkHistoryStore(swiftData: swiftDataService)
+        let plannerContentCardStore = SwiftDataPlannerContentCardStore(swiftData: swiftDataService)
         let plannerDashboardService = makePlannerDashboardService(for: dataMode)
 
         let services = AppServices(
             swiftDataService: swiftDataService,
             themeService: themeService,
-            deepLinkService: deepLinkService
+            deepLinkService: deepLinkService,
+            authService: authService
         )
 
         let repositories = AppRepositories(
-            plannerDashboardRepository: PlannerDashboardRepository(service: plannerDashboardService),
+            plannerDashboardRepository: PlannerDashboardRepository(
+                service: plannerDashboardService,
+                contentCardStore: plannerContentCardStore
+            ),
             deepLinkHistoryRepository: DeepLinkHistoryRepository(store: deepLinkStore)
         )
 

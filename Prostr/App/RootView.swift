@@ -16,7 +16,13 @@ struct RootView: View {
             if let appCore {
                 let theme = appCore.appTheme(for: systemColorScheme)
 
-                TabsView(appCore: appCore)
+                Group {
+                    if appCore.authSession == nil {
+                        AuthFlowView(appCore: appCore)
+                    } else {
+                        TabsView(appCore: appCore)
+                    }
+                }
                     .environment(appCore)
                     .appTheme(theme)
                     .preferredColorScheme(appCore.preferredColorScheme)

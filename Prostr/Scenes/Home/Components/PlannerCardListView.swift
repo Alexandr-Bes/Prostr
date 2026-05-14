@@ -13,6 +13,17 @@ struct PlannerCardListView: View {
     @Binding var selectedFilter: PlannerCardFilter
 
     let sections: [PlannerCardListSection]
+    let onSelectCard: (PlannerContentCard) -> Void
+
+    init(
+        selectedFilter: Binding<PlannerCardFilter>,
+        sections: [PlannerCardListSection],
+        onSelectCard: @escaping (PlannerContentCard) -> Void = { _ in }
+    ) {
+        self._selectedFilter = selectedFilter
+        self.sections = sections
+        self.onSelectCard = onSelectCard
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -42,7 +53,12 @@ private extension PlannerCardListView {
 
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(section.cards) { card in
-                    PlannerContentCardView(card: card)
+                    Button {
+                        onSelectCard(card)
+                    } label: {
+                        PlannerContentCardView(card: card)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }

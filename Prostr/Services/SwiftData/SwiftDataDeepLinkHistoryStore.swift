@@ -24,7 +24,7 @@ final class SwiftDataDeepLinkHistoryStore: DeepLinkHistoryStoreProtocol {
 
     func record(routeValue: String, openedAt: Date) async throws {
         let record = SwiftDataDeepLinkRecord(routeValue: routeValue, openedAt: openedAt)
-        swiftData.context.insert(record)
+        swiftData.insert(record)
         try swiftData.save()
     }
 
@@ -33,6 +33,6 @@ final class SwiftDataDeepLinkHistoryStore: DeepLinkHistoryStoreProtocol {
             sortBy: [SortDescriptor(\.openedAt, order: .reverse)]
         )
         descriptor.fetchLimit = limit
-        return try swiftData.context.fetch(descriptor)
+        return try swiftData.fetch(descriptor)
     }
 }
